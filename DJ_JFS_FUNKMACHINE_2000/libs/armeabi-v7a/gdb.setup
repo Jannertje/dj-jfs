@@ -1,0 +1,2 @@
+set solib-search-path ./obj/local/armeabi-v7a
+directory /home/floris/Android/android-ndk-r8/platforms/android-8/arch-arm/usr/include /home/floris/Android/android-opencv2/OpenCV-2.4.1/share/opencv/../../include/opencv /home/floris/Android/android-opencv2/OpenCV-2.4.1/share/opencv/../../include /home/floris/Android/android-ndk-r8/sources/cxx-stl/gnu-libstdc++/include /home/floris/Android/android-ndk-r8/sources/cxx-stl/gnu-libstdc++/libs/armeabi-v7a/include jni

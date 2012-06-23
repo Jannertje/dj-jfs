@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, FunkMachineActivity!</string>
+    <string name="app_name">DJ_JFS_FunkMachine_2000</string>
+    <string name="capimage">Capture New Image</string>
+    <string name="browseimage">Choose image from gallery</string>
+    <string name="primage">Process Image</string>
+    <string name="processing">Processing image..</string>
+    <string name="getpath">Getting path..</string>
+    <string name="picused">Using captured picture</string>
+
+</resources>

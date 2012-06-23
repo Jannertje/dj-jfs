@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <Button
+        android:id="@+id/capbutton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="takePhoto"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="5dp"
+        android:text="@string/capimage" />
+
+    <Button
+        android:id="@+id/loadbutton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="browseImage"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="5dp"
+        android:text="@string/browseimage" />
+
+    <Button
+        android:id="@+id/processbutton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="processImage"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="5dp"
+        android:text="@string/primage" />
+
+    <TextView
+        android:id="@+id/picused"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/picused"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="10dp"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+</LinearLayout>
