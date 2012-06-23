@@ -1,7 +1,6 @@
 package com.jfs.funkmachine2000;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
 import android.app.Activity;
@@ -14,6 +13,12 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.TextView;
 
+/**
+ * Main activity. Called when you open the app.
+ * 
+ * @author Floris
+ *
+ */
 public class FunkMachineActivity extends Activity {
 	public final static String IMAGE_PATH = "com.jfs.funkmachine2000.IMAGEPATH";
 	public final static String IMAGE_FILE = "com.jfs.funkmachine2000.IMAGEFILE";
@@ -26,7 +31,6 @@ public class FunkMachineActivity extends Activity {
 	private String imagePath;
 	private String imageFile;
 
-	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -35,7 +39,12 @@ public class FunkMachineActivity extends Activity {
 		imagePath = getFilesDir().getPath();
 		imageFile = "capturedImage.jpg";
 	}
-
+	
+	/**
+	 * Called when the user presses the "Process image" button.
+	 * @param view
+	 * @author Floris
+	 */
 	public void processImage(View view) {
 		Intent intent = new Intent(this, ProcessImageActivity.class);
 		intent.putExtra(IMAGE_PATH, imagePath);
@@ -45,6 +54,11 @@ public class FunkMachineActivity extends Activity {
 		startActivity(intent);
 	}
 
+	/**
+	 * Called when the user presses the "Choose image from gallery" button
+	 * @param view
+	 * @author Floris
+	 */
 	public void browseImage(View view) {
 		startActivityForResult(new Intent(Intent.ACTION_PICK,
 				android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI),
@@ -75,6 +89,12 @@ public class FunkMachineActivity extends Activity {
 			}
 	}
 	
+	/**
+	 * Used to transform the Uri into a File Path, because C++ doesn't understand Uri.
+	 * @param contentUri The Uri to transform
+	 * @return The File Path of the content Uri
+	 * @author Floris
+	 */
 	public String getRealPathFromURI(Uri contentUri) {
         String[] proj = { MediaStore.Images.Media.DATA };
         Cursor cursor = managedQuery(contentUri, proj, null, null, null);
@@ -83,6 +103,11 @@ public class FunkMachineActivity extends Activity {
         return cursor.getString(column_index);
     }
 	
+	/**
+	 * Called when the user presses the "Capture New Image" button
+	 * @param view
+	 * @author Floris
+	 */
 	public void takePhoto(View view) {
 		//Remove if exists, the file MUST be created using the lines below
 		File f = new File(getFilesDir(), "capturedImage.jpg");
