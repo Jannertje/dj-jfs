@@ -138,6 +138,12 @@ public class ProcessImageActivity extends Activity {
 				error = true;
 			} else {
 				processText.setText("done");
+				
+				Intent intent = new Intent(Intent.ACTION_SEND);
+				intent.setType("text/plain");
+				intent.putExtra(Intent.EXTRA_TEXT, result);
+				startActivity(Intent.createChooser(intent, "Share with"));
+				
 				closeThread.start();
 			}
 		}

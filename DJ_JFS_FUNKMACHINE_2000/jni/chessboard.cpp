@@ -13,14 +13,15 @@ using namespace cv;
 
 extern "C" {
 JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_detectChessboardFromImage(
-		JNIEnv * env, jclass obj, jstring imgpath, jstring imgfile, jint jsquareSize,
-		jint jhueTolerance, jint jcannyThreshold1, jint jcannyThreshold2);
+		JNIEnv * env, jclass obj, jstring imgpath, jstring imgfile,
+		jint jsquareSize, jint jhueTolerance, jint jcannyThreshold1,
+		jint jcannyThreshold2);
 }
 
 JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_detectChessboardFromImage(
-		JNIEnv * env, jclass obj, jstring imgpath, jstring imgfile, jint jsquareSize,
-		jint jhueTolerance, jint jcannyThreshold1, jint jcannyThreshold2) {
-
+		JNIEnv * env, jclass obj, jstring imgpath, jstring imgfile,
+		jint jsquareSize, jint jhueTolerance, jint jcannyThreshold1,
+		jint jcannyThreshold2) {
 
 	jboolean isCopy;
 	const char *imagePathConst = env->GetStringUTFChars(imgpath, &isCopy);
@@ -32,13 +33,13 @@ JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_dete
 	strcat(imageFile, "/");
 	strcat(imageFile, imageFileName);
 
-    env->ReleaseStringUTFChars(imgpath, imagePathConst);
-    env->ReleaseStringUTFChars(imgfile, imageFileName);
+	env->ReleaseStringUTFChars(imgpath, imagePathConst);
+	env->ReleaseStringUTFChars(imgfile, imageFileName);
 
-    int squareSize = (int) jsquareSize;
-    int hueTolerance = (int) jhueTolerance;
-    int cannyThreshold1 = (int) jcannyThreshold1;
-    int cannyThreshold2 = (int) jcannyThreshold2;
+	int squareSize = (int) jsquareSize;
+	int hueTolerance = (int) jhueTolerance;
+	int cannyThreshold1 = (int) jcannyThreshold1;
+	int cannyThreshold2 = (int) jcannyThreshold2;
 
 	// Number of corners in the interior of the chessboard
 	Size patternsize(7, 7);
@@ -47,8 +48,8 @@ JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_dete
 	Mat grayimg = imread(imageFile, CV_LOAD_IMAGE_GRAYSCALE);
 
 	if (img.data == NULL) {
-		char rval[30+strlen(imageFile)];
-		strcpy(rval,"e: Unable to read image ");
+		char rval[30 + strlen(imageFile)];
+		strcpy(rval, "e: Unable to read image ");
 		strcat(rval, imageFile);
 		return env->NewStringUTF(rval);
 	}
@@ -186,10 +187,12 @@ JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_dete
 		}
 	}
 
+	string labels;
+	labelstream >> labels;
 	// Create the output string
 	stringstream outputstream;
 	outputstream << "8,8:";
-	outputstream << labelstream;
+	outputstream << labels;
 	outputstream << ":";
 	for (i = 0; i < 8; i++) {
 		for (j = 0; j < 8; j++) {
