@@ -2,8 +2,8 @@ package com.jfs.funkmachine2000;
 
 /**
  * This class contains the default settings for the chessboard detection. It
- * will be used to initialize the parameters for the native call and for the
- * settings menu.
+ * will be used to initialize variables in the settings menu that will
+ * ultimately feed the parameters in the native call.
  * 
  * @author Floris
  * 

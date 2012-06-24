@@ -1,14 +1,13 @@
 package com.jfs.funkmachine2000;
 
 import java.io.File;
-import java.io.FileOutputStream;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.TextView;
@@ -36,8 +35,9 @@ public class FunkMachineActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		imagePath = getFilesDir().getPath();
+		imagePath = Environment.getExternalStorageDirectory() + "/DJ_JFS_FunkMachine";
 		imageFile = "capturedImage.jpg";
+		 
 	}
 	
 	/**
@@ -84,7 +84,7 @@ public class FunkMachineActivity extends Activity {
 			if (resultCode == Activity.RESULT_OK) {
 				picUsed = (TextView) findViewById(R.id.picused);
 				picUsed.setText("Using captured picture");
-				imagePath = getFilesDir().getPath();
+				imagePath = Environment.getExternalStorageDirectory() + "/DJ_JFS_FunkMachine";
 				imageFile = "capturedImage.jpg";
 			}
 	}
@@ -109,18 +109,11 @@ public class FunkMachineActivity extends Activity {
 	 * @author Floris
 	 */
 	public void takePhoto(View view) {
-		//Remove if exists, the file MUST be created using the lines below
-		File f = new File(getFilesDir(), "capturedImage.jpg");
-		f.delete();
-		//Create new file
-		try {
-			FileOutputStream fos = openFileOutput("capturedImage.jpg", Context.MODE_WORLD_WRITEABLE);
-			fos.close();
-		} catch(Exception e) {
-			//
-		}
-		//Get reference to the file
-		f = new File(getFilesDir(), "capturedImage.jpg");
+	    File folder = new File(Environment.getExternalStorageDirectory() + "/DJ_JFS_FunkMachine");
+	    if(!folder.isDirectory())
+	    	folder.mkdir();
+	    
+		File f = new File(Environment.getExternalStorageDirectory() + "/DJ_JFS_FunkMachine", "capturedImage.jpg");
 		
 		Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
