@@ -75,9 +75,9 @@ public class ProcessImageActivity extends Activity {
 
 	/**
 	 * The native method that processes the image. Please note that the content
-	 * of this method is already compiled to /libs/armeabi-v7a/libchessboard.so. 
+	 * of this method is already compiled to /libs/armeabi-v7a/libchessboard.so.
 	 * 
-	 * @param imgpath
+	 * @param imgfolder
 	 *            The path to the image to process, without the filename and
 	 *            final '/'
 	 * @param imgfile
@@ -97,6 +97,26 @@ public class ProcessImageActivity extends Activity {
 	 * @param cannyThreshold2
 	 *            The second threshold argument of the Canny function. See the
 	 *            OpenCV docs for more info.
+	 * @param adaptiveThreshold
+	 *            Boolean that sets the adaptive threshold parameter for the
+	 *            findChessboardCorners function. See the OpenCV docs for more
+	 *            info
+	 * @param normalizeImage
+	 *            Boolean that sets the normalize image parameter for the
+	 *            findChessboardCorners function. See the OpenCV docs for more
+	 *            info
+	 * @param filterQuads
+	 *            Boolean that sets the filter quads parameter for the
+	 *            findChessboardCorners function. See the OpenCV docs for more
+	 *            info
+	 * @param fastCheck
+	 *            Boolean that sets the fast-check parameter for the
+	 *            findChessboardCorners function. See the OpenCV docs for more
+	 *            info
+	 * @param nsquaresx
+	 *            Number of columns on the chessboard
+	 * @param nsquaresy
+	 *            Number of rows on the chessboard
 	 * @return A String that holds the detected colors. It is formatted as
 	 *         follows: <br>
 	 *         nrows,mcols:alphabet:row1col1,row2col1, ... , row1coln, row2coln
@@ -106,11 +126,12 @@ public class ProcessImageActivity extends Activity {
 	 *         In case of an error in the chessboard detection, the function
 	 *         will return: <br>
 	 *         e:description of error
-	 * @author Floris
 	 */
-	public native String detectChessboardFromImage(String imgpath,
-			String imgfile, int squareSize, int hueTolerance,
-			int cannyThreshold1, int cannyThreshold2);
+	public native String readChessboardImage(String imgfolder, String imgfile,
+			int squareSize, int hueTolerance, int cannyThreshold1,
+			int cannyThreshold2, boolean adaptiveThreshold,
+			boolean normalizeImage, boolean filterQuads, boolean fastCheck,
+			int nsquaresx, int nsquaresy);
 
 	/**
 	 * An AsyncTask to do the Native Call. This is to ensure that the UI doesn't
@@ -124,11 +145,16 @@ public class ProcessImageActivity extends Activity {
 		@Override
 		protected String doInBackground(String... imagepath) {
 			// TODO: Create a menu to change the default parameters.
-			String nativeResult = detectChessboardFromImage(imagePath,
-					imageFile, DefaultOCVSettings.SQUARE_SIZE,
+			String nativeResult = readChessboardImage(imagePath, imageFile,
+					DefaultOCVSettings.SQUARE_SIZE,
 					DefaultOCVSettings.HUE_TOLERANCE,
 					DefaultOCVSettings.CANNY_THRESHOLD_1,
-					DefaultOCVSettings.CANNY_THRESHOLD_2);
+					DefaultOCVSettings.CANNY_THRESHOLD_2,
+					DefaultOCVSettings.ADAPTIVE_THRESHOLD,
+					DefaultOCVSettings.NORMALIZE_IMAGE,
+					DefaultOCVSettings.FAST_CHECK,
+					DefaultOCVSettings.FILTER_QUADS,
+					DefaultOCVSettings.nsquaresx, DefaultOCVSettings.nsquaresy);
 			return nativeResult;
 		}
 
@@ -138,12 +164,12 @@ public class ProcessImageActivity extends Activity {
 				error = true;
 			} else {
 				processText.setText("done");
-				
+
 				Intent intent = new Intent(Intent.ACTION_SEND);
 				intent.setType("text/plain");
 				intent.putExtra(Intent.EXTRA_TEXT, result);
 				startActivity(Intent.createChooser(intent, "Share with"));
-				
+
 				closeThread.start();
 			}
 		}

@@ -1,77 +1,51 @@
-#include <jni.h>
-
+#include "jni.h"
+#include <android/log.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <stdio.h>
-#include <string.h>
+#include <string>
+#include <sstream>
+#include <iostream>
+
+#define APPNAME "FUNKMACHINE"
 
 using namespace std;
 using namespace cv;
 
 extern "C" {
-JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_detectChessboardFromImage(
-		JNIEnv * env, jclass obj, jstring imgpath, jstring imgfile,
+JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_readChessboardImage(
+		JNIEnv * enc, jobject obj, jstring jimageFolder, jstring jimageFile,
 		jint jsquareSize, jint jhueTolerance, jint jcannyThreshold1,
-		jint jcannyThreshold2);
+		jint jcannyThreshold2, jboolean adaptiveThreshold,
+		jboolean normalizeImage, jboolean filterQuads, jboolean fastCheck,
+		jint nsquaresx, jint nsquaresy);
 }
 
-JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_detectChessboardFromImage(
-		JNIEnv * env, jclass obj, jstring imgpath, jstring imgfile,
-		jint jsquareSize, jint jhueTolerance, jint jcannyThreshold1,
-		jint jcannyThreshold2) {
+int findChessboardConfig(int at, int ni, int fq, int fc) {
+	return at * CALIB_CB_ADAPTIVE_THRESH + ni * CALIB_CB_NORMALIZE_IMAGE
+			+ fq * CALIB_CB_FILTER_QUADS + fc * CALIB_CB_FAST_CHECK;
+}
 
-	jboolean isCopy;
-	const char *imagePathConst = env->GetStringUTFChars(imgpath, &isCopy);
-	const char *imageFileName = env->GetStringUTFChars(imgfile, &isCopy);
-	char imagePath[strlen(imagePathConst) + 10];
-	strcpy(imagePath, imagePathConst);
-	char imageFile[strlen(imagePathConst) + strlen(imageFileName) + 10];
-	strcpy(imageFile, imagePath);
-	strcat(imageFile, "/");
-	strcat(imageFile, imageFileName);
-
-	env->ReleaseStringUTFChars(imgpath, imagePathConst);
-	env->ReleaseStringUTFChars(imgfile, imageFileName);
-
-	int squareSize = (int) jsquareSize;
-	int hueTolerance = (int) jhueTolerance;
-	int cannyThreshold1 = (int) jcannyThreshold1;
-	int cannyThreshold2 = (int) jcannyThreshold2;
+Mat detectChessboardFromImage(Mat img, int squareSize, int nsquaresx,
+		int nsquaresy, bool adaptiveThreshold, bool normalizeImage,
+		bool filterQuads, bool fastCheck) {
 
 	// Number of corners in the interior of the chessboard
-	Size patternsize(7, 7);
-	// Read a greyscale and color copy
-	Mat img = imread(imageFile, CV_LOAD_IMAGE_COLOR);
-	Mat grayimg = imread(imageFile, CV_LOAD_IMAGE_GRAYSCALE);
+	Size patternsize(nsquaresx - 1, nsquaresy - 1);
 
-	if (img.data == NULL) {
-		char rval[30 + strlen(imageFile)];
-		strcpy(rval, "e: Unable to read image ");
-		strcat(rval, imageFile);
-		return env->NewStringUTF(rval);
-	}
-
-	// This is where the coordinates for the warpPerspective go
+	// Create coordinate arrays for the warp perspective and findChessboardCorners output
 	Point2f destinationCorners[4], outerCorners[4];
-	// This is where the findChessBoardCorners output goes
 	vector < Point2f > corners;
 
+	// Detect the chessboard corners
 	bool patternfound = findChessboardCorners(img, patternsize, corners,
-			CALIB_CB_FAST_CHECK + CALIB_CB_NORMALIZE_IMAGE);
+			findChessboardConfig(adaptiveThreshold, normalizeImage, filterQuads,
+					fastCheck));
 
-	if (patternfound) {
-		cornerSubPix(grayimg, corners, Size(11, 11), Size(-1, -1),
-				TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
-	} else {
-		char rval[] = "e: Chessboard not found";
-		return env->NewStringUTF(rval);
-	}
-
-	// Draw the detected corners
-	drawChessboardCorners(grayimg, patternsize, Mat(corners), patternfound);
+	if (!patternfound)
+		return Mat();
 
 	// Set coordinates for warp
 	outerCorners[0] = corners[0];
@@ -83,52 +57,56 @@ JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_dete
 	destinationCorners[2] = Point2f(squareSize, squareSize);
 	destinationCorners[3] = Point2f(squareSize, squareSize * 7);
 
-	// Get the matrix for the warp transformation
-	Mat ptrans = getPerspectiveTransform(outerCorners, destinationCorners);
+	Mat pTransform = getPerspectiveTransform(outerCorners, destinationCorners);
+	return pTransform;
+}
 
-	// Create a new image and wCV_32SC1rite the transformed source image
-	Size warpedsize = Size(squareSize * 8, squareSize * 8);
-	Mat warped = Mat(warpedsize, CV_8UC3);
-	warpPerspective(img, warped, ptrans, warpedsize);
+string detectColors(Mat img, unsigned int nsquaresx, unsigned int nsquaresy,
+		string imgfolder, Mat pTransform, unsigned int squareSize,
+		unsigned int hueTolerance, int cannyThreshold1, int cannyThreshold2) {
+
+	// Create a new image and write the trandsformed source image
+	Size warpedSize = Size(squareSize * 8, squareSize * 8);
+	Mat warped = Mat(warpedSize, CV_8UC3);
+	warpPerspective(img, warped, pTransform, warpedSize);
 
 	// Create a HSV copy for easy color reading
 	Mat warpedHSV;
 	cvtColor(warped, warpedHSV, CV_BGR2HSV, 0);
 
 	// Detect edges with Canny
-	Mat canny_output;
-	Canny(warped, canny_output, cannyThreshold1, cannyThreshold2, 3);
+	Mat cannyOutput;
+	Canny(warped, cannyOutput, cannyThreshold1, cannyThreshold2, 3);
 
 	// Find the contours from the detected edges
 	vector < vector<Point> > contours;
 	vector < Vec4i > hierarchy;
-	findContours(canny_output, contours, hierarchy, CV_RETR_CCOMP,
+	findContours(cannyOutput, contours, hierarchy, CV_RETR_CCOMP,
 			CV_CHAIN_APPROX_SIMPLE);
 
 	// Number of colors detected so far
 	unsigned int ncolors = 0;
-	// Arrays holding the color hue values and the color indexes for the contours
-	int colors[20];
-	Vec3b colorsrgb[20];
-	int contourColors[contours.size()];
+	unsigned const int maxcolors = 15;
+	// Arrays holding the color hue values and color indexes
+	int colors[maxcolors];
+	int contourColors[maxcolors];
 
-	// Array containing all chess fields
-	stringstream chessboard[8 * 8];
+	// Array containing all chess fields strings
+	stringstream chessboard[nsquaresx * nsquaresy];
+	// Stream containing all the color labels
+	stringstream labelStream;
 
 	bool found;
-	double area;
-	char colorlabel;
 	Rect bounding;
+	double area;
 	Vec3b sampleColor;
-	stringstream tempss;
-	string temps;
-	unsigned int i = 0, j, row, col, x, y, nfieldcolors, subx, suby;
-
-	// String stream containing all color labels
-	stringstream labelstream;
+	char colorLabel;
+	stringstream temps;
+	unsigned int i, j, row, col, x, y, colorDiff;
 
 	// Loop through the contours
-	for (; i < contours.size(); i++) {
+	for (i = 0; i < contours.size(); i++) {
+		// Select each contour only once
 		if (hierarchy[i][3] != -1) {
 			area = contourArea(contours[i]);
 			bounding = boundingRect(contours[i]);
@@ -137,80 +115,125 @@ JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_dete
 			x = bounding.x + bounding.width / 2;
 			y = bounding.y + bounding.height / 2;
 
-			// Check if the contour is valid based on area and bounding properties
-			if (area < squareSize * squareSize * 0.75
-					&& area > max(bounding.area() * 0.2, (double) 10)) {
-				// Get the HSV array at the center pixel of the shape
-				sampleColor = warpedHSV.at < Vec3b > ((int) y, (int) x);
+			// Filter chessboard squares
+			if (bounding.width < squareSize * 0.8
+					&& bounding.height < squareSize * 0.8) {
+				// Filter blobs contours that are too thin or small
+				if (area > max(bounding.area() * 0.2, (double) 10)) {
+					// Get the HSV array at the center pixel of the shape
+					sampleColor = warpedHSV.at < Vec3b > (y, x);
 
-				// Check if the sampleColor or similar color is found before
-				j = 0;
-				found = false;
-				for (; j < ncolors; j++) {
-					if (abs(sampleColor[0] - colors[j]) < hueTolerance
-							|| abs(sampleColor[0] - colors[j])
-									> 180 - hueTolerance) {
-						contourColors[i] = j;
-						found = true;
-						break;
+
+					// Check if the sampleColor or similar color is found before
+					found = false;
+					for (j = 0; j < ncolors; j++) {
+						colorDiff = abs(sampleColor[0] - colors[j]);
+						if (colorDiff < hueTolerance
+								|| colorDiff > 180 - hueTolerance) {
+							contourColors[i] = j;
+							found = true;
+							break;
+						}
 					}
-				}
-				// If not found, add to the colors array
-				if (!found) {
-					colors[ncolors] = sampleColor[0];
-					colorsrgb[ncolors] = warped.at < Vec3b > ((int) y, (int) x);
-					contourColors[i] = ncolors;
-					colorlabel = 'a' + ncolors;
-					labelstream << colorlabel;
-					ncolors++;
-					if (ncolors > 20) {
-						// TODO: Make error
-						break;
+
+					// If not found, add to the colors array
+					if (!found) {
+						if (ncolors == maxcolors) {
+							return "e: too many colors";
+						}
+						colors[ncolors] = sampleColor[0];
+						contourColors[i] = ncolors;
+						colorLabel = 'a' + ncolors;
+						labelStream << colorLabel;
+						ncolors++;
 					}
+
+					// Add labels to the warped image
+					colorLabel = 'a' + contourColors[i];
+					temps.str(std::string());
+					temps.clear();
+					temps << colorLabel;
+
+					putText(warped, temps.str(), Point(x, y),
+							FONT_HERSHEY_PLAIN, 1, Scalar(0, 0, 0), 2, CV_AA,
+							false);
+					putText(warped, temps.str(), Point(x, y),
+							FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255), 1,
+							CV_AA, false);
+
+					// Determine in which chessboard field the contour resides
+					row = y / squareSize;
+					col = x / squareSize;
+					chessboard[col * nsquaresx + row] << colorLabel;
 				}
-
-				// Add labels to the warped image
-				colorlabel = 'a' + contourColors[i];
-				tempss.clear();
-				tempss << colorlabel;
-				tempss >> temps;
-				putText(warped, temps, Point(x, y), FONT_HERSHEY_PLAIN, 1,
-						Scalar(0, 0, 0), 2, CV_AA, false);
-				putText(warped, temps, Point(x, y), FONT_HERSHEY_PLAIN, 1,
-						Scalar(255, 255, 255), 1, CV_AA, false);
-
-				// Determine in which chessboard field the contour resides
-				row = y / squareSize;
-				col = x / squareSize;
-				chessboard[col * 8 + row] << colorlabel;
 			}
 		}
 	}
 
-	string labels;
-	labelstream >> labels;
 	// Create the output string
 	stringstream outputstream;
-	outputstream << "8,8:";
-	outputstream << labels;
-	outputstream << ":";
-	for (i = 0; i < 8; i++) {
-		for (j = 0; j < 8; j++) {
+	outputstream << nsquaresx;
+	outputstream << ',';
+	outputstream << nsquaresy;
+	outputstream << ':';
+	outputstream << labelStream.str();
+	outputstream << ':';
+	for (i = 0; i < nsquaresx; i++) {
+		for (j = 0; j < nsquaresy; j++) {
 			if (i != 0 || j != 0)
 				outputstream << ',';
-			outputstream << chessboard[i * 8 + j].str();
+			outputstream << chessboard[i * nsquaresx + j].str();
 		}
 	}
 
-	String output;
-	outputstream >> output;
-	const char *outputstring = output.c_str();
-
-	// Write the warped image to file
-	char imageWarped[200];
-	strcpy(imageWarped, imagePath);
-	strcat(imageWarped, "/imageWarped.jpg");
+	string imageWarped = imgfolder + "/imageWarped.jpg";
 	imwrite(imageWarped, warped);
 
-	return env->NewStringUTF(outputstring);
+	return outputstream.str();
+}
+
+JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_readChessboardImage(
+		JNIEnv * env, jobject obj, jstring jimageFolder, jstring jimageFile,
+		jint jsquareSize, jint jhueTolerance, jint jcannyThreshold1,
+		jint jcannyThreshold2, jboolean adaptiveThreshold,
+		jboolean normalizeImage, jboolean filterQuads, jboolean fastCheck,
+		jint nsquaresx, jint nsquaresy) {
+	jboolean isCopy;
+	const char *imageFolder = env->GetStringUTFChars(jimageFolder, &isCopy);
+	const char *imageFile = env->GetStringUTFChars(jimageFile, &isCopy);
+
+	// Create folder and filepath string
+	stringstream pathbuilder;
+	pathbuilder << imageFolder;
+	string imgfolder = pathbuilder.str();
+	pathbuilder << "/";
+	pathbuilder << imageFile;
+	string imgfile = pathbuilder.str();
+
+
+	// Read an image to matrix
+	Mat img = imread(imgfile, CV_LOAD_IMAGE_COLOR);
+	if (img.data == NULL) {
+		string rval = "e: Unable to read image " + imgfile;
+		return env->NewStringUTF(rval.c_str());
+	}
+
+	Mat pTransform = detectChessboardFromImage(img, (int) jsquareSize,
+			(int) nsquaresx, (int) nsquaresy, (bool) adaptiveThreshold,
+			(bool) normalizeImage, (bool) filterQuads, (bool) fastCheck);
+
+	if (pTransform.data == NULL) {
+		string rval = "e: Chessboard not found";
+		return env->NewStringUTF(rval.c_str());
+	}
+
+	String outputString = detectColors(img, (unsigned int) nsquaresx, (unsigned int) nsquaresy,
+			imgfolder, pTransform, (unsigned int) jsquareSize, (unsigned int) jhueTolerance,
+			(int) jcannyThreshold1, (int) jcannyThreshold2);
+	env->ReleaseStringUTFChars(jimageFolder, imageFolder);
+	env->ReleaseStringUTFChars(jimageFile, imageFile);
+
+	const char *output = outputString.c_str();
+	return env->NewStringUTF(output);
+
 }
