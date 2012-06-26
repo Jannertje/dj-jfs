@@ -1,0 +1,80 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory 
+        android:title="Chessboard Detection"
+        android:key="chessboard_detection">
+        
+        <CheckBoxPreference 
+            android:key="adaptiveThreshold"
+            android:title="Adaptive Threshold" 
+            android:defaultValue="false"
+        />          
+        <CheckBoxPreference 
+            android:key="normalizeImage"
+            android:title="Normalize Image" 
+            android:defaultValue="true"
+        />          
+        <CheckBoxPreference 
+            android:key="filterQuads"
+            android:title="Filter Quads" 
+            android:defaultValue="false"
+        />          
+        <CheckBoxPreference 
+            android:key="fastCheck"
+            android:title="Fast-check" 
+            android:defaultValue="true"
+        />
+		<EditTextPreference
+		    android:key="nsquaresx"
+		    android:title="Number of columns"
+		    android:numeric="integer"
+		    android:maxLength="2"
+		    android:defaultValue="8" />
+		<EditTextPreference
+		    android:key="nsquaresy"
+		    android:title="Number of rows"
+		    android:numeric="integer"
+		    android:maxLength="2"
+		    android:defaultValue="8" />
+		<EditTextPreference
+		    android:key="squareSize"
+		    android:title="Square Size"
+		    android:numeric="integer"
+		    android:maxLength="4"
+		    android:defaultValue="100" />
+    </PreferenceCategory>
+    <PreferenceCategory 
+        android:title="Color Detection"
+        android:key="color_detection">
+        
+		<EditTextPreference
+		    android:key="cannyThreshold1"
+		    android:title="Canny Threshold 1"
+		    android:numeric="integer"
+		    android:maxLength="4"
+		    android:defaultValue="50" />
+		<EditTextPreference
+		    android:key="cannyThreshold2"
+		    android:title="Canny Threshold 2"
+		    android:numeric="integer"
+		    android:maxLength="4"
+		    android:defaultValue="100" />
+		<EditTextPreference
+		    android:key="hueTolerance"
+		    android:title="Hue Tolerance"
+		    android:numeric="integer"
+		    android:maxLength="3"
+		    android:defaultValue="20" />
+    </PreferenceCategory>
+    <PreferenceCategory 
+        android:title="Sound Settings"
+        android:key="sound_settings">
+        
+		<EditTextPreference
+		    android:key="bmp"
+		    android:title="Beast Per Minute"
+		    android:numeric="integer"
+		    android:maxLength="4"
+		    android:defaultValue="120" />
+    </PreferenceCategory>
+    
+</PreferenceScreen>

@@ -26,7 +26,7 @@ public class FunkMachineActivity extends Activity {
 	private final static int SELECT_IMAGE = 2;
 
 	private Uri outputFileUri;
-	private TextView picUsed;
+	private TextView processButton;
 	private String imagePath;
 	private String imageFile;
 
@@ -50,7 +50,7 @@ public class FunkMachineActivity extends Activity {
 		intent.putExtra(IMAGE_PATH, imagePath);
 		intent.putExtra(IMAGE_FILE, imageFile);
 
-		picUsed = (TextView) findViewById(R.id.picused);
+		processButton = (TextView) findViewById(R.id.processbutton);
 		startActivity(intent);
 	}
 
@@ -76,14 +76,14 @@ public class FunkMachineActivity extends Activity {
 				File file = new File(realPath);
 				imagePath = file.getParent();
 				imageFile = file.getName();
-				picUsed = (TextView) findViewById(R.id.picused);
-				picUsed.setText("Using " + realPath);
+				processButton = (TextView) findViewById(R.id.processbutton);
+				processButton.setText("Process " + realPath);
 			}
 
 		if (requestCode == TAKE_PICTURE)
 			if (resultCode == Activity.RESULT_OK) {
-				picUsed = (TextView) findViewById(R.id.picused);
-				picUsed.setText("Using captured picture");
+				processButton = (TextView) findViewById(R.id.processbutton);
+				processButton.setText("Process captured image");
 				imagePath = Environment.getExternalStorageDirectory() + "/DJ_JFS_FunkMachine";
 				imageFile = "capturedImage.jpg";
 			}
@@ -120,5 +120,14 @@ public class FunkMachineActivity extends Activity {
 		outputFileUri = Uri.fromFile(f);
 		intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
 		startActivityForResult(intent, TAKE_PICTURE);
+	}
+	
+	/**
+	 * Called when the user presses the "Settings" button
+	 * @param view
+	 * @author Jan
+	 */
+	public void openSettings(View view) {
+		startActivity(new Intent(this, SettingsActivity.class));
 	}
 }

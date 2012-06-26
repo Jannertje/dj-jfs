@@ -4,44 +4,77 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/logo" />
+
     <Button
         android:id="@+id/capbutton"
+        style="@style/jfs_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="takePhoto"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:layout_marginTop="5dp"
+        android:onClick="takePhoto"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
         android:text="@string/capimage" />
 
     <Button
         android:id="@+id/loadbutton"
+        style="@style/jfs_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="browseImage"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:layout_marginTop="5dp"
+        android:onClick="browseImage"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
         android:text="@string/browseimage" />
 
     <Button
         android:id="@+id/processbutton"
+        style="@style/jfs_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="processImage"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:layout_marginTop="5dp"
+        android:onClick="processImage"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
         android:text="@string/primage" />
 
-    <TextView
-        android:id="@+id/picused"
-        android:layout_width="wrap_content"
+    <Button
+        android:id="@+id/settingsbutton"
+        style="@style/jfs_button"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/picused"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
-        android:layout_marginTop="10dp"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:layout_marginTop="5dp"
+        android:onClick="openSettings"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:text="@string/settings" />
+
+    <Button
+        android:id="@+id/midibutton"
+        style="@style/jfs_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="5dp"
+        android:onClick="toMidiList"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:text="@string/midilist" />
 
 </LinearLayout>

@@ -10,10 +10,9 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-
     <application
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name" >
+        android:theme="@style/jfs_theme" >
         <activity
             android:name=".FunkMachineActivity"
             android:label="@string/app_name" >
@@ -23,7 +22,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ProcessImageActivity" />
+        <activity android:name="ProcessImageActivity" />        
+        <activity android:name="SettingsActivity" android:label="@string/settings" />
     </application>
 
 </manifest>

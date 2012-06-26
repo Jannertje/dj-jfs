@@ -1,9 +1,16 @@
 package com.jfs.funkmachine2000;
 
+import java.io.File;
+
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
@@ -20,6 +27,7 @@ public class ProcessImageActivity extends Activity {
 	private TextView processText;
 	private Thread closeThread;
 	private NativeChessboardTask chessTask;
+	private SharedPreferences sharedPrefs;
 
 	private String imagePath;
 	private String imageFile;
@@ -27,9 +35,10 @@ public class ProcessImageActivity extends Activity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		error = false;
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.process);
+
+		error = false;
 
 		Intent intent = getIntent();
 		imagePath = intent.getStringExtra(FunkMachineActivity.IMAGE_PATH);
@@ -41,23 +50,12 @@ public class ProcessImageActivity extends Activity {
 		chessTask = new NativeChessboardTask();
 		chessTask.execute(imagePath + "/" + imageFile);
 
-		closeThread = new Thread() {
-			@Override
-			public void run() {
-				try {
-					synchronized (this) {
-						wait(1000);
-					}
-				} catch (InterruptedException ex) {
-
-				}
-				finish();
-			}
-		};
+		sharedPrefs = getSharedPreferences("preferences", Context.MODE_PRIVATE);
 	}
 
 	@Override
 	public void onBackPressed() {
+		finish();
 		if (error)
 			finish();
 	}
@@ -144,17 +142,19 @@ public class ProcessImageActivity extends Activity {
 			AsyncTask<String, Integer, String> {
 		@Override
 		protected String doInBackground(String... imagepath) {
-			// TODO: Create a menu to change the default parameters.
+
+			// TODO: Add normalized image to native code
 			String nativeResult = readChessboardImage(imagePath, imageFile,
-					DefaultOCVSettings.SQUARE_SIZE,
-					DefaultOCVSettings.HUE_TOLERANCE,
-					DefaultOCVSettings.CANNY_THRESHOLD_1,
-					DefaultOCVSettings.CANNY_THRESHOLD_2,
-					DefaultOCVSettings.ADAPTIVE_THRESHOLD,
-					DefaultOCVSettings.NORMALIZE_IMAGE,
-					DefaultOCVSettings.FAST_CHECK,
-					DefaultOCVSettings.FILTER_QUADS,
-					DefaultOCVSettings.nsquaresx, DefaultOCVSettings.nsquaresy);
+					sharedPrefs.getInt("squareSize", 100),
+					sharedPrefs.getInt("hueTolerance", 20),
+					sharedPrefs.getInt("cannyThreshold1", 50),
+					sharedPrefs.getInt("cannyThreshold2", 100),
+					sharedPrefs.getBoolean("adaptiveThreshold", false),
+					sharedPrefs.getBoolean("normalizeImage", false),
+					sharedPrefs.getBoolean("fastCheck", true),
+					sharedPrefs.getBoolean("filterQuads", false),
+					sharedPrefs.getInt("nsquaresx", 8),
+					sharedPrefs.getInt("nsquaresy", 8));
 			return nativeResult;
 		}
 
@@ -164,13 +164,22 @@ public class ProcessImageActivity extends Activity {
 				error = true;
 			} else {
 				processText.setText("done");
+				
+				File imgFile = new  File(imagePath + "/imageWarped.jpg");
+				if(imgFile.exists()){
+
+				    Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+
+				    ImageView warpedImage = (ImageView) findViewById(R.id.warpedImageView);
+				    warpedImage.setImageBitmap(myBitmap);
+
+				}
 
 				Intent intent = new Intent(Intent.ACTION_SEND);
 				intent.setType("text/plain");
 				intent.putExtra(Intent.EXTRA_TEXT, result);
 				startActivity(Intent.createChooser(intent, "Share with"));
 
-				closeThread.start();
 			}
 		}
 	}
