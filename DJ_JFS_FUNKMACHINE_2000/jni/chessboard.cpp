@@ -46,7 +46,7 @@ Mat detectChessboardFromImage(Mat img, int squareSize, int nsquaresx,
 
 	// Detect the chessboard corners
 	bool patternfound = findChessboardCorners(blurred, patternsize, corners,
-			findChessboardConfig(adaptiveThreshold, normalizeImage, filterQuads,
+			findChessboardConfig(adaptiveThreshold, false, filterQuads,
 					fastCheck));
 
 	if (!patternfound)
@@ -249,15 +249,21 @@ JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_read
 		return env->NewStringUTF(rval.c_str());
 	}
 
-	Mat stretched_img;
-	normalize(grayimg, stretched_img, 0, 255, CV_MINMAX);
+	Mat pTransform;
 
-	Mat blur_img;
-	medianBlur(stretched_img, blur_img, 5);
+	if((bool) normalizeImage) {
+		Mat stretched_img;
+		normalize(grayimg, stretched_img, 0, 255, CV_MINMAX);
 
-	Mat pTransform = detectChessboardFromImage(stretched_img, (int) jsquareSize,
-			(int) nsquaresx, (int) nsquaresy, (bool) adaptiveThreshold,
-			(bool) normalizeImage, (bool) filterQuads, (bool) fastCheck);
+		pTransform = detectChessboardFromImage(stretched_img, (int) jsquareSize,
+				(int) nsquaresx, (int) nsquaresy, (bool) adaptiveThreshold,
+				(bool) normalizeImage, (bool) filterQuads, (bool) fastCheck);
+	} else {
+		pTransform = detectChessboardFromImage(img, (int) jsquareSize,
+						(int) nsquaresx, (int) nsquaresy, (bool) adaptiveThreshold,
+						(bool) normalizeImage, (bool) filterQuads, (bool) fastCheck);
+	}
+
 
 	if (pTransform.data == NULL) {
 		string rval = "e: Chessboard not found";
