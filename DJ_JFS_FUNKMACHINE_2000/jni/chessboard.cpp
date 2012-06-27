@@ -49,10 +49,10 @@ Mat detectChessboardFromImage(Mat &img, int squareSize, int nsquaresx,
 		return Mat();
 
 	// Set coordinates for warp
-	outerCorners[0] = corners[0];
-	outerCorners[1] = corners[6];
-	outerCorners[2] = corners[42];
-	outerCorners[3] = corners[48];
+	outerCorners[3] = corners[6];
+	outerCorners[2] = corners[48];
+	outerCorners[1] = corners[0];
+	outerCorners[0] = corners[42];
 	destinationCorners[0] = Point2f(squareSize * 7, squareSize);
 	destinationCorners[1] = Point2f(squareSize * 7, squareSize * 7);
 	destinationCorners[2] = Point2f(squareSize, squareSize);
@@ -182,9 +182,9 @@ string detectColors(Mat &img, unsigned int nsquaresx, unsigned int nsquaresy,
 				temps << colorLabel;
 
 				putText(warped, temps.str(), Point(x, y), FONT_HERSHEY_PLAIN, 1,
-						Scalar(0, 0, 0), 2, CV_AA, false);
+						Scalar(0, 0, 0), 3, CV_AA, false);
 				putText(warped, temps.str(), Point(x, y), FONT_HERSHEY_PLAIN, 1,
-						Scalar(255, 255, 255), 1, CV_AA, false);
+						Scalar(255, 255, 255), 2, CV_AA, false);
 
 				add_orb(l, i, x, y, colorLabel);
 			}

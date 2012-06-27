@@ -1,6 +1,7 @@
 package com.jfs.funkmachine2000;
 
 import java.io.File;
+import java.io.IOException;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,6 +14,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -38,6 +40,9 @@ public class ProcessImageActivity extends Activity {
 
 	private String imagePath;
 	private String imageFile;
+	
+	private Bitmap warpBitmap;
+	private String outputString;
 
 	private boolean completed;
 	private boolean formatted;
@@ -74,37 +79,37 @@ public class ProcessImageActivity extends Activity {
 
 		chessTask.cancel(true);
 	}
-	
+
 	@Override
 	public void onSaveInstanceState(Bundle outstate) {
 		super.onSaveInstanceState(outstate);
 		outstate.putBoolean("completed", completed);
 	}
-	
+
 	@Override
-	public void onRestoreInstanceState (Bundle savedInstanceState) {
+	public void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
 		completed = savedInstanceState.getBoolean("completed", false);
 	}
-	
+
 	@Override
 	public void onResume() {
 		super.onResume();
-		if(!completed) {
-			chessTask = new NativeChessboardTask();
+		chessTask = new NativeChessboardTask();
+		if (!completed) {
 			chessTask.execute(imagePath + "/" + imageFile);
 		}
 	}
-	
+
 	/**
-	 * Runs when the user presses the change view button.
-	 * Should toggle between formatted and unformatted image;
+	 * Runs when the user presses the change view button. Should toggle between
+	 * formatted and unformatted image;
 	 */
-	public void changeView (View view) {
+	public void changeView(View view) {
 
 		Button changeView = (Button) findViewById(R.id.changeViewButton);
-		
-		if(formatted) {
+
+		if (formatted) {
 			formatted = false;
 			// TODO: Change to normal image
 			changeView.setText(R.string.changeview);
@@ -114,17 +119,49 @@ public class ProcessImageActivity extends Activity {
 			changeView.setText(R.string.changeviewback);
 		}
 	}
-	
-	public void openWarpedImage (View view) {
+
+	public void openWarpedImage(View view) {
 		File warpedImage = new File(imagePath + "/imageWarped.jpg");
 		Intent intent = new Intent();
 		intent.setAction(android.content.Intent.ACTION_VIEW);
 		intent.setDataAndType(Uri.fromFile(warpedImage), "image/jpg");
 		startActivity(intent);
 	}
-	
-	public void  saveMusic (View view) {
+
+	public void saveMusic(View view) {
 		
+		SharedPreferences sharedPrefs = PreferenceManager
+				.getDefaultSharedPreferences(this);
+
+		File file = new File(getCacheDir(), "midi.mid");
+		StringToMidi helper = new StringToMidi(outputString,
+				Integer.parseInt(sharedPrefs.getString("bpm", "120")),
+				Integer.parseInt(sharedPrefs.getString("rootnote", "0"))
+						+ 12
+						* (Integer.parseInt(sharedPrefs.getString(
+								"rootoctave", "4")) + 1));
+		helper.makeMidi(file);
+
+		try {
+			MidiDatabaseHelper dbHelper = new MidiDatabaseHelper(this);
+			dbHelper.open();
+			Midi toPlay = dbHelper.insertMidi(FunkFileManager.getBytesFromFile(file),
+					outputString);
+			dbHelper.close();
+			
+			// TODO: find a more elegant solution for copying the warped image to
+			// private storage
+			if(sharedPrefs.getBoolean("saveImage", false)) {
+				FunkFileManager.saveBitmap (warpBitmap, "warpedImage" + toPlay.getId(), this);
+			}
+			
+			Intent intent = new Intent(this, PlayMidiActivity.class);
+			intent.putExtra(PlayMidiActivity.MIDI_ID, toPlay.getId());
+			startActivity(intent);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 	}
 
 	/**
@@ -233,18 +270,6 @@ public class ProcessImageActivity extends Activity {
 			return nativeResult;
 		}
 
-		/*
-		 * // TODO: find a more elegant solution for copying the warped image to
-		 * private storage try { FunkFileManager.createFolderNoMedia(getFilesDir
-		 * () + "/warped") FileOutputStream out = new
-		 * FileOutputStream(getFilesDir () + "/warped");
-		 * bmp.compress(Bitmap.CompressFormat.PNG, 90, out); } catch (Exception
-		 * e) { showToast ("Unable to create image in: " + getFilesDir () +
-		 * "/warped. Image not saved.") }(non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
-
 		protected void onPostExecute(String result) {
 			completed = true;
 			if (result.charAt(0) == 'e') {
@@ -258,19 +283,21 @@ public class ProcessImageActivity extends Activity {
 				File imgFile = new File(imagePath + "/imageWarped.jpg");
 				if (imgFile.exists()) {
 
-					Bitmap warpBitmap = BitmapFactory.decodeFile(imgFile
+					warpBitmap = BitmapFactory.decodeFile(imgFile
 							.getAbsolutePath());
 
 					ImageView warpedImage = (ImageView) findViewById(R.id.warpedImageView);
 					warpedImage.setVisibility(View.VISIBLE);
 					warpedImage.setImageBitmap(warpBitmap);
-					
+
 					Button changeView = (Button) findViewById(R.id.changeViewButton);
 					changeView.setVisibility(View.VISIBLE);
-					
+
 					Button saveButton = (Button) findViewById(R.id.saveFunkButton);
 					saveButton.setVisibility(View.VISIBLE);
 				}
+				
+				outputString = result;
 
 			}
 		}

@@ -85,7 +85,6 @@ public class FunkMachineActivity extends Activity {
 				processButton = (TextView) findViewById(R.id.processbutton);
 				processButton.setText("Process " + realPath);
 			}
-
 		if (requestCode == TAKE_PICTURE)
 			if (resultCode == Activity.RESULT_OK) {
 				processButton = (TextView) findViewById(R.id.processbutton);

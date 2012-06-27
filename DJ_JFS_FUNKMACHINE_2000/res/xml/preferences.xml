@@ -12,12 +12,29 @@
         />
         
 		<EditTextPreference
-		    android:key="bmp"
+		    android:key="bpm"
 		    android:title="Beast Per Minute"
             android:summary="BPM to use when generating new music files"
 		    android:numeric="integer"
 		    android:maxLength="4"
 		    android:defaultValue="120" />
+		        
+		<EditTextPreference
+		    android:key="rootnote"
+		    android:title="Root Note"
+            android:summary="Root Note (0-11)"
+		    android:numeric="integer"
+		    android:maxLength="1"
+		    android:defaultValue="0" />		
+		            
+		<EditTextPreference
+		    android:key="rootoctave"
+		    android:title="Root Octave"
+            android:summary="Root Octave (0-7)"
+		    android:numeric="integer"
+		    android:maxLength="1"
+		    android:defaultValue="4" />
+		
     </PreferenceCategory>
     
     <PreferenceCategory 

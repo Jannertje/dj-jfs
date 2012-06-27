@@ -23,6 +23,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ProcessImageActivity" />        
+        <activity android:name=".PlayMidiActivity" />        
         <activity android:name=".SettingsActivity" android:label="@string/settings" />
     </application>
 
