@@ -12,5 +12,7 @@
     <string name="midilist">Funk list</string>
     <string name="about">About App</string>
     <string name="changeview">View formatted image</string>
+    <string name="changeviewback">View warped photo</string>
+    <string name="savemusic">Save and play</string>
 
 </resources>

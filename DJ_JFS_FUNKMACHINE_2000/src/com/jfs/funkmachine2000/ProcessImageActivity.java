@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -52,13 +53,10 @@ public class ProcessImageActivity extends Activity {
 
 		progressText = (TextView) findViewById(R.id.progressText);
 		progressText.setText(imagePath + "/" + imageFile);
-		processText = (TextView) findViewById(R.id.progressText);
+		processText = (TextView) findViewById(R.id.processText);
 
 		sharedPrefs = PreferenceManager
 				.getDefaultSharedPreferences(getBaseContext());
-
-		chessTask = new NativeChessboardTask();
-		chessTask.execute(imagePath + "/" + imageFile);
 
 		completed = false;
 		formatted = false;
@@ -75,6 +73,58 @@ public class ProcessImageActivity extends Activity {
 		super.onStop();
 
 		chessTask.cancel(true);
+	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle outstate) {
+		super.onSaveInstanceState(outstate);
+		outstate.putBoolean("completed", completed);
+	}
+	
+	@Override
+	public void onRestoreInstanceState (Bundle savedInstanceState) {
+		super.onRestoreInstanceState(savedInstanceState);
+		completed = savedInstanceState.getBoolean("completed", false);
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		if(!completed) {
+			chessTask = new NativeChessboardTask();
+			chessTask.execute(imagePath + "/" + imageFile);
+		}
+	}
+	
+	/**
+	 * Runs when the user presses the change view button.
+	 * Should toggle between formatted and unformatted image;
+	 */
+	public void changeView (View view) {
+
+		Button changeView = (Button) findViewById(R.id.changeViewButton);
+		
+		if(formatted) {
+			formatted = false;
+			// TODO: Change to normal image
+			changeView.setText(R.string.changeview);
+		} else {
+			formatted = true;
+			// TODO: Change to formatted image
+			changeView.setText(R.string.changeviewback);
+		}
+	}
+	
+	public void openWarpedImage (View view) {
+		File warpedImage = new File(imagePath + "/imageWarped.jpg");
+		Intent intent = new Intent();
+		intent.setAction(android.content.Intent.ACTION_VIEW);
+		intent.setDataAndType(Uri.fromFile(warpedImage), "image/jpg");
+		startActivity(intent);
+	}
+	
+	public void  saveMusic (View view) {
+		
 	}
 
 	/**
@@ -202,8 +252,8 @@ public class ProcessImageActivity extends Activity {
 				processText.setTextColor(Color.RED);
 
 			} else {
-				processText.setText("");
-				progressText.setText("Done");
+				processText.setVisibility(View.GONE);
+				progressText.setVisibility(View.GONE);
 
 				File imgFile = new File(imagePath + "/imageWarped.jpg");
 				if (imgFile.exists()) {
@@ -217,6 +267,9 @@ public class ProcessImageActivity extends Activity {
 					
 					Button changeView = (Button) findViewById(R.id.changeViewButton);
 					changeView.setVisibility(View.VISIBLE);
+					
+					Button saveButton = (Button) findViewById(R.id.saveFunkButton);
+					saveButton.setVisibility(View.VISIBLE);
 				}
 
 			}

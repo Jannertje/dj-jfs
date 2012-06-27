@@ -5,7 +5,7 @@
 
     <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical" >
 
         <TextView
@@ -32,12 +32,13 @@
             android:id="@+id/warpedImageView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="0dp"
+            android:layout_marginBottom="10dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
-            android:layout_marginTop="0dp"
-            android:scaleType="fitXY"
-            android:visibility="invisible"/>
+            android:layout_marginTop="10dp"
+            android:adjustViewBounds="true"
+            android:onClick="openWarpedImage"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/changeViewButton"
@@ -51,7 +52,22 @@
             android:paddingBottom="8dp"
             android:paddingTop="8dp"
             android:text="@string/changeview"
-            android:visibility="invisible" />
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/saveFunkButton"
+            style="@style/jfs_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="8dp"
+            android:onClick="saveMusic"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp"
+            android:text="@string/savemusic"
+            android:visibility="gone" />
+        
     </LinearLayout>
 
 </ScrollView>

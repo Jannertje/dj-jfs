@@ -149,6 +149,16 @@ public class FunkMachineActivity extends Activity {
 	public void openSettings(View view) {
 		startActivity(new Intent(this, SettingsActivity.class));
 	}
+
+	/**
+	 * Called when the user presses the "Settings" button
+	 * 
+	 * @param view
+	 * @author Floris
+	 */
+	public void openAbout(View view) {
+		startActivity(new Intent(this, AboutActivity.class));
+	}
 	
 	/**
 	 * Shows a Toast message

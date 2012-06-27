@@ -11,6 +11,10 @@
         <item name="android:cacheColorHint">@android:color/transparent</item>
         <item name="android:textSize">11pt</item>
     </style>
+    
+    <style name="TransparentImageButton" parent="@android:style/Widget.ImageButton">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
 
     <style name="TransparentListView" parent="@android:style/Widget.ListView">
         <item name="android:cacheColorHint">@android:color/transparent</item>

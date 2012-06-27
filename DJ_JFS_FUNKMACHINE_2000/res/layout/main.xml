@@ -90,7 +90,7 @@
             android:layout_marginRight="5dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="10dp"
-            android:onClick="toAbout"
+            android:onClick="openAbout"
             android:paddingBottom="8dp"
             android:paddingTop="8dp"
             android:text="@string/about" />
