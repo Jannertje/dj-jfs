@@ -1,8 +1,10 @@
 package com.jfs.funkmachine2000;
 
 import java.io.File;
+import java.io.IOException;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -11,12 +13,13 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Main activity. Called when you open the app.
  * 
- * @author Floris
- *
+ * @author Floris, Jan
+ * 
  */
 public class FunkMachineActivity extends Activity {
 	public final static String IMAGE_PATH = "com.jfs.funkmachine2000.IMAGEPATH";
@@ -35,13 +38,15 @@ public class FunkMachineActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		imagePath = Environment.getExternalStorageDirectory() + "/DJ_JFS_FunkMachine";
+		imagePath = Environment.getExternalStorageDirectory()
+				+ "/DJ_JFS_FunkMachine";
 		imageFile = "capturedImage.jpg";
-		 
+
 	}
-	
+
 	/**
 	 * Called when the user presses the "Process image" button.
+	 * 
 	 * @param view
 	 * @author Floris
 	 */
@@ -56,6 +61,7 @@ public class FunkMachineActivity extends Activity {
 
 	/**
 	 * Called when the user presses the "Choose image from gallery" button
+	 * 
 	 * @param view
 	 * @author Floris
 	 */
@@ -84,50 +90,75 @@ public class FunkMachineActivity extends Activity {
 			if (resultCode == Activity.RESULT_OK) {
 				processButton = (TextView) findViewById(R.id.processbutton);
 				processButton.setText("Process captured image");
-				imagePath = Environment.getExternalStorageDirectory() + "/DJ_JFS_FunkMachine";
+				imagePath = Environment.getExternalStorageDirectory()
+						+ "/DJ_JFS_FunkMachine";
 				imageFile = "capturedImage.jpg";
 			}
 	}
-	
+
 	/**
-	 * Used to transform the Uri into a File Path, because C++ doesn't understand Uri.
-	 * @param contentUri The Uri to transform
+	 * Used to transform the Uri into a File Path, because C++ doesn't
+	 * understand Uri.
+	 * 
+	 * @param contentUri
+	 *            The Uri to transform
 	 * @return The File Path of the content Uri
 	 * @author Floris
 	 */
 	public String getRealPathFromURI(Uri contentUri) {
-        String[] proj = { MediaStore.Images.Media.DATA };
-        Cursor cursor = managedQuery(contentUri, proj, null, null, null);
-        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-        cursor.moveToFirst();
-        return cursor.getString(column_index);
-    }
-	
+		String[] proj = { MediaStore.Images.Media.DATA };
+		Cursor cursor = managedQuery(contentUri, proj, null, null, null);
+		int column_index = cursor
+				.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+		cursor.moveToFirst();
+		return cursor.getString(column_index);
+	}
+
 	/**
 	 * Called when the user presses the "Capture New Image" button
+	 * 
 	 * @param view
 	 * @author Floris
 	 */
 	public void takePhoto(View view) {
-	    File folder = new File(Environment.getExternalStorageDirectory() + "/DJ_JFS_FunkMachine");
-	    if(!folder.isDirectory())
-	    	folder.mkdir();
-	    
-		File f = new File(Environment.getExternalStorageDirectory() + "/DJ_JFS_FunkMachine", "capturedImage.jpg");
-		
+		try {
+			FunkFileManager.createFolderNoMedia(Environment.getExternalStorageDirectory()
+				+ "/DJ_JFS_FunkMachine");
+		} catch (IOException e) {
+			showToast("Unable to create folder "+Environment.getExternalStorageDirectory()
+					+ "/DJ_JFS_FunkMachine");
+			return;
+		}
+
+		File f = new File(Environment.getExternalStorageDirectory()
+				+ "/DJ_JFS_FunkMachine", "capturedImage.jpg");
+
 		Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
 		outputFileUri = Uri.fromFile(f);
 		intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
 		startActivityForResult(intent, TAKE_PICTURE);
 	}
-	
+
 	/**
 	 * Called when the user presses the "Settings" button
+	 * 
 	 * @param view
 	 * @author Jan
 	 */
 	public void openSettings(View view) {
 		startActivity(new Intent(this, SettingsActivity.class));
+	}
+	
+	/**
+	 * Shows a Toast message
+	 * @author Floris
+	 */
+	public void showToast (CharSequence message) {
+		Context context = getApplicationContext();
+		int duration = Toast.LENGTH_LONG;
+		
+		Toast toast = Toast.makeText(context, message, duration);
+		toast.show();
 	}
 }

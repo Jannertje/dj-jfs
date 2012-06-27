@@ -22,8 +22,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="ProcessImageActivity" />        
-        <activity android:name="SettingsActivity" android:label="@string/settings" />
+        <activity android:name=".ProcessImageActivity" />        
+        <activity android:name=".SettingsActivity" android:label="@string/settings" />
     </application>
 
 </manifest>

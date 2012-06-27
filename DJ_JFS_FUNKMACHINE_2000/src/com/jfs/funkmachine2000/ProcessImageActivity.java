@@ -8,10 +8,15 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * The ProcessImageActivity class makes a Native call to process the user's
@@ -24,6 +29,7 @@ import android.widget.TextView;
  * 
  */
 public class ProcessImageActivity extends Activity {
+	private TextView progressText;
 	private TextView processText;
 	private Thread closeThread;
 	private NativeChessboardTask chessTask;
@@ -31,32 +37,36 @@ public class ProcessImageActivity extends Activity {
 
 	private String imagePath;
 	private String imageFile;
-	private boolean error;
+
+	private boolean completed;
+	private boolean formatted;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.process);
 
-		error = false;
-
 		Intent intent = getIntent();
 		imagePath = intent.getStringExtra(FunkMachineActivity.IMAGE_PATH);
 		imageFile = intent.getStringExtra(FunkMachineActivity.IMAGE_FILE);
 
+		progressText = (TextView) findViewById(R.id.progressText);
+		progressText.setText(imagePath + "/" + imageFile);
 		processText = (TextView) findViewById(R.id.progressText);
-		processText.setText(imagePath + "/" + imageFile);
+
+		sharedPrefs = PreferenceManager
+				.getDefaultSharedPreferences(getBaseContext());
 
 		chessTask = new NativeChessboardTask();
 		chessTask.execute(imagePath + "/" + imageFile);
 
-		sharedPrefs = getSharedPreferences("preferences", Context.MODE_PRIVATE);
+		completed = false;
+		formatted = false;
 	}
 
 	@Override
 	public void onBackPressed() {
-		finish();
-		if (error)
+		if (completed)
 			finish();
 	}
 
@@ -65,6 +75,19 @@ public class ProcessImageActivity extends Activity {
 		super.onStop();
 
 		chessTask.cancel(true);
+	}
+
+	/**
+	 * Shows a Toast message
+	 * 
+	 * @author Floris
+	 */
+	public void showToast(CharSequence message) {
+		Context context = getApplicationContext();
+		int duration = Toast.LENGTH_LONG;
+
+		Toast toast = Toast.makeText(context, message, duration);
+		toast.show();
 	}
 
 	static {
@@ -142,43 +165,59 @@ public class ProcessImageActivity extends Activity {
 			AsyncTask<String, Integer, String> {
 		@Override
 		protected String doInBackground(String... imagepath) {
-
-			// TODO: Add normalized image to native code
-			String nativeResult = readChessboardImage(imagePath, imageFile,
-					sharedPrefs.getInt("squareSize", 100),
-					sharedPrefs.getInt("hueTolerance", 20),
-					sharedPrefs.getInt("cannyThreshold1", 50),
-					sharedPrefs.getInt("cannyThreshold2", 100),
-					sharedPrefs.getBoolean("adaptiveThreshold", false),
+			String nativeResult = readChessboardImage(
+					imagePath,
+					imageFile,
+					Integer.parseInt(sharedPrefs.getString("squareSize", "100")),
+					Integer.parseInt(sharedPrefs
+							.getString("hueTolerance", "20")), Integer
+							.parseInt(sharedPrefs.getString("cannyThreshold1",
+									"30")), Integer.parseInt(sharedPrefs
+							.getString("cannyThreshold2", "90")), sharedPrefs
+							.getBoolean("adaptiveThreshold", false),
 					sharedPrefs.getBoolean("normalizeImage", false),
-					sharedPrefs.getBoolean("fastCheck", true),
-					sharedPrefs.getBoolean("filterQuads", false),
-					sharedPrefs.getInt("nsquaresx", 8),
-					sharedPrefs.getInt("nsquaresy", 8));
+					sharedPrefs.getBoolean("fastCheck", true), sharedPrefs
+							.getBoolean("filterQuads", false), Integer
+							.parseInt(sharedPrefs.getString("nsquaresx", "8")),
+					Integer.parseInt(sharedPrefs.getString("nsquaresy", "8")));
 			return nativeResult;
 		}
 
+		/*
+		 * // TODO: find a more elegant solution for copying the warped image to
+		 * private storage try { FunkFileManager.createFolderNoMedia(getFilesDir
+		 * () + "/warped") FileOutputStream out = new
+		 * FileOutputStream(getFilesDir () + "/warped");
+		 * bmp.compress(Bitmap.CompressFormat.PNG, 90, out); } catch (Exception
+		 * e) { showToast ("Unable to create image in: " + getFilesDir () +
+		 * "/warped. Image not saved.") }(non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
+
 		protected void onPostExecute(String result) {
+			completed = true;
 			if (result.charAt(0) == 'e') {
-				processText.setText(result);
-				error = true;
+				processText.setText(result.substring(2));
+				processText.setTextColor(Color.RED);
+
 			} else {
-				processText.setText("done");
-				
-				File imgFile = new  File(imagePath + "/imageWarped.jpg");
-				if(imgFile.exists()){
+				processText.setText("");
+				progressText.setText("Done");
 
-				    Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+				File imgFile = new File(imagePath + "/imageWarped.jpg");
+				if (imgFile.exists()) {
 
-				    ImageView warpedImage = (ImageView) findViewById(R.id.warpedImageView);
-				    warpedImage.setImageBitmap(myBitmap);
+					Bitmap warpBitmap = BitmapFactory.decodeFile(imgFile
+							.getAbsolutePath());
 
+					ImageView warpedImage = (ImageView) findViewById(R.id.warpedImageView);
+					warpedImage.setVisibility(View.VISIBLE);
+					warpedImage.setImageBitmap(warpBitmap);
+					
+					Button changeView = (Button) findViewById(R.id.changeViewButton);
+					changeView.setVisibility(View.VISIBLE);
 				}
-
-				Intent intent = new Intent(Intent.ACTION_SEND);
-				intent.setType("text/plain");
-				intent.putExtra(Intent.EXTRA_TEXT, result);
-				startActivity(Intent.createChooser(intent, "Share with"));
 
 			}
 		}

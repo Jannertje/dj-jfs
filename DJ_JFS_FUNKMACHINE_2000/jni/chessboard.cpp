@@ -29,7 +29,7 @@ int findChessboardConfig(int at, int ni, int fq, int fc) {
 			+ fq * CALIB_CB_FILTER_QUADS + fc * CALIB_CB_FAST_CHECK;
 }
 
-Mat detectChessboardFromImage(Mat img, int squareSize, int nsquaresx,
+Mat detectChessboardFromImage(Mat &img, int squareSize, int nsquaresx,
 		int nsquaresy, bool adaptiveThreshold, bool normalizeImage,
 		bool filterQuads, bool fastCheck) {
 
@@ -40,12 +40,8 @@ Mat detectChessboardFromImage(Mat img, int squareSize, int nsquaresx,
 	Point2f destinationCorners[4], outerCorners[4];
 	vector < Point2f > corners;
 
-	// blur the image a little
-	Mat blurred;
-	blur(img, blurred, Size(3,3));
-
 	// Detect the chessboard corners
-	bool patternfound = findChessboardCorners(blurred, patternsize, corners,
+	bool patternfound = findChessboardCorners(img, patternsize, corners,
 			findChessboardConfig(adaptiveThreshold, false, filterQuads,
 					fastCheck));
 
@@ -66,7 +62,7 @@ Mat detectChessboardFromImage(Mat img, int squareSize, int nsquaresx,
 	return pTransform;
 }
 
-string detectColors(Mat img, unsigned int nsquaresx, unsigned int nsquaresy,
+string detectColors(Mat &img, unsigned int nsquaresx, unsigned int nsquaresy,
 		string imgfolder, Mat pTransform, unsigned int squareSize,
 		unsigned int hueTolerance, int cannyThreshold1, int cannyThreshold2) {
 

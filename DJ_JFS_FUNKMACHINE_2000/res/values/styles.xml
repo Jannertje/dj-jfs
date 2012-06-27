@@ -11,13 +11,13 @@
         <item name="android:cacheColorHint">@android:color/transparent</item>
         <item name="android:textSize">11pt</item>
     </style>
-<!-- 
-    <style name="TransparentListView" parent="@android:style/Widget.PreferenceScreen">
+
+    <style name="TransparentListView" parent="@android:style/Widget.ListView">
         <item name="android:cacheColorHint">@android:color/transparent</item>
     </style>
 
-    <style name="TransparentExpandableListView" parent="@android:style/Widget.PreferenceScreen">
+    <style name="TransparentExpandableListView" parent="@android:style/Widget.ListView">
         <item name="android:cacheColorHint">@android:color/transparent</item> 
-    </style> -->
+    </style> 
 
 </resources>

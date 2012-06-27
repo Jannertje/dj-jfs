@@ -21,6 +21,34 @@
     </PreferenceCategory>
     
     <PreferenceCategory 
+        android:title="Color Detection"
+        android:key="color_detection"
+        android:summary="Warning: these are advanced settings and should only be changed when something's not working.">
+        
+		<EditTextPreference
+		    android:key="cannyThreshold1"
+		    android:title="Canny Threshold 1"
+            android:summary="Parameter for the OpenCV Canny function, used to detect edges"
+		    android:numeric="integer"
+		    android:maxLength="4"
+		    android:defaultValue="30" />
+		<EditTextPreference
+		    android:key="cannyThreshold2"
+		    android:title="Canny Threshold 2"
+            android:summary="Advice: Set this to three times threshold 1"
+		    android:numeric="integer"
+		    android:maxLength="4"
+		    android:defaultValue="90" />
+		<EditTextPreference
+		    android:key="hueTolerance"
+		    android:title="Hue Tolerance"
+            android:summary="Colors that differ less than this value will be regarded as equal (0-255)"
+		    android:numeric="integer"
+		    android:maxLength="3"
+		    android:defaultValue="20" />
+    </PreferenceCategory>
+    
+    <PreferenceCategory 
         android:title="Chessboard Detection"
         android:key="chessboard_detection">
         
@@ -69,31 +97,5 @@
 		    android:numeric="integer"
 		    android:maxLength="4"
 		    android:defaultValue="100" />
-    </PreferenceCategory>
-    <PreferenceCategory 
-        android:title="Color Detection"
-        android:key="color_detection">
-        
-		<EditTextPreference
-		    android:key="cannyThreshold1"
-		    android:title="Canny Threshold 1"
-            android:summary="Parameter for the OpenCV Canny function, used to detect edges"
-		    android:numeric="integer"
-		    android:maxLength="4"
-		    android:defaultValue="50" />
-		<EditTextPreference
-		    android:key="cannyThreshold2"
-		    android:title="Canny Threshold 2"
-            android:summary="Parameter for the OpenCV Canny function, used to detect edges"
-		    android:numeric="integer"
-		    android:maxLength="4"
-		    android:defaultValue="100" />
-		<EditTextPreference
-		    android:key="hueTolerance"
-		    android:title="Hue Tolerance"
-            android:summary="Colors that differ less than this value will be regarded as equal (0-255)"
-		    android:numeric="integer"
-		    android:maxLength="3"
-		    android:defaultValue="20" />
     </PreferenceCategory>
 </PreferenceScreen>
