@@ -150,7 +150,17 @@ public class FunkMachineActivity extends Activity {
 	}
 
 	/**
-	 * Called when the user presses the "Settings" button
+	 * Called when the user presses the "FunkList" button
+	 * 
+	 * @param view
+	 * @author Jan
+	 */
+	public void openFunkList(View view) {
+		startActivity(new Intent(this, FunkListActivity.class));
+	}
+
+	/**
+	 * Called when the user presses the "About" button
 	 * 
 	 * @param view
 	 * @author Floris
