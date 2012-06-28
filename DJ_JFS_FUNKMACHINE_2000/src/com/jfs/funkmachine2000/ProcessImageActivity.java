@@ -111,7 +111,8 @@ public class ProcessImageActivity extends Activity {
 
 		if (formatted) {
 			formatted = false;
-			// TODO: Change to normal image
+			ImageView warpedImage = (ImageView) findViewById(R.id.warpedImageView);
+			warpedImage.setImageBitmap(warpBitmap);
 			changeView.setText(R.string.changeview);
 		} else {
 			formatted = true;
@@ -267,6 +268,7 @@ public class ProcessImageActivity extends Activity {
 							.getBoolean("filterQuads", false), Integer
 							.parseInt(sharedPrefs.getString("nsquaresx", "8")),
 					Integer.parseInt(sharedPrefs.getString("nsquaresy", "8")));
+			
 			return nativeResult;
 		}
 

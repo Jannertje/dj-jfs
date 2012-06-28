@@ -12,7 +12,7 @@
 
     <application
         android:icon="@drawable/ic_launcher"
-        android:theme="@style/jfs_theme" >
+        android:theme="@style/jfs_theme">
         <activity
             android:name=".FunkMachineActivity"
             android:label="@string/app_name" >
@@ -22,7 +22,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ProcessImageActivity" />        
+        <activity android:name=".ProcessImageActivity" />    
+        <activity android:name=".AboutActivity" />        
+        <activity android:name=".FunkListActivity" />        
         <activity android:name=".PlayMidiActivity" />        
         <activity android:name=".SettingsActivity" android:label="@string/settings" />
     </application>
