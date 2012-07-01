@@ -7,6 +7,11 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+/**
+ * Shows all the previously created songs and calls the PlayMidiActivity onclick.
+ * @author Jan
+ *
+ */
 public class FunkListActivity extends ListActivity {
 
 	private MidiDatabaseHelper dbHelper;

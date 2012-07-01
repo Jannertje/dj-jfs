@@ -28,7 +28,7 @@ import android.widget.Toast;
  * native call is made. When the Native Call has executed without error, it will
  * wait 1 second and close the activity.
  * 
- * @author Floris
+ * @author Floris, Jan
  * 
  */
 public class ProcessImageActivity extends Activity {
@@ -40,7 +40,7 @@ public class ProcessImageActivity extends Activity {
 
 	private String imagePath;
 	private String imageFile;
-	
+
 	private Bitmap warpBitmap;
 	private String outputString;
 
@@ -103,7 +103,9 @@ public class ProcessImageActivity extends Activity {
 
 	/**
 	 * Runs when the user presses the change view button. Should toggle between
-	 * formatted and unformatted image;
+	 * formatted and unformatted image
+	 * 
+	 * @param view
 	 */
 	public void changeView(View view) {
 
@@ -121,6 +123,12 @@ public class ProcessImageActivity extends Activity {
 		}
 	}
 
+	/**
+	 * Allows the user to take a closer look at the warped image by calling the
+	 * ACTION_VIEW Intent on the image path.
+	 * 
+	 * @param view
+	 */
 	public void openWarpedImage(View view) {
 		File warpedImage = new File(imagePath + "/imageWarped.jpg");
 		Intent intent = new Intent();
@@ -129,8 +137,14 @@ public class ProcessImageActivity extends Activity {
 		startActivity(intent);
 	}
 
+	/**
+	 * Writes the image to private storage, and saves the midi to the SQLite
+	 * database.
+	 * 
+	 * @param view
+	 */
 	public void saveMusic(View view) {
-		
+
 		SharedPreferences sharedPrefs = PreferenceManager
 				.getDefaultSharedPreferences(this);
 
@@ -139,36 +153,33 @@ public class ProcessImageActivity extends Activity {
 				Integer.parseInt(sharedPrefs.getString("bpm", "120")),
 				Integer.parseInt(sharedPrefs.getString("rootnote", "0"))
 						+ 12
-						* (Integer.parseInt(sharedPrefs.getString(
-								"rootoctave", "4")) + 1));
+						* (Integer.parseInt(sharedPrefs.getString("rootoctave",
+								"4")) + 1));
 		helper.makeMidi(file);
 
 		try {
 			MidiDatabaseHelper dbHelper = new MidiDatabaseHelper(this);
 			dbHelper.open();
-			Midi toPlay = dbHelper.insertMidi(FunkFileManager.getBytesFromFile(file),
-					outputString);
+			Midi toPlay = dbHelper.insertMidi(
+					FunkFileManager.getBytesFromFile(file), outputString);
 			dbHelper.close();
-			
-			// TODO: find a more elegant solution for copying the warped image to
-			// private storage
-			if(sharedPrefs.getBoolean("saveImage", false)) {
-				FunkFileManager.saveBitmap (warpBitmap, "warpedImage" + toPlay.getId(), this);
+
+			if (sharedPrefs.getBoolean("saveImage", false)) {
+				FunkFileManager.saveBitmap(warpBitmap,
+						"warpedImage" + toPlay.getId(), this);
 			}
-			
+
 			Intent intent = new Intent(this, PlayMidiActivity.class);
 			intent.putExtra(PlayMidiActivity.MIDI_ID, toPlay.getId());
 			startActivity(intent);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
+		}
 	}
 
 	/**
-	 * Shows a Toast message
+	 * Shows a Toast message (useful for debugging)
 	 * 
-	 * @author Floris
 	 */
 	public void showToast(CharSequence message) {
 		Context context = getApplicationContext();
@@ -199,7 +210,15 @@ public class ProcessImageActivity extends Activity {
 	 *            imgpath.
 	 * @param hueTolerance
 	 *            An int value in the range 0-255. Color blobs will be regarded
-	 *            as equal when they differ less than this tolerance value.
+	 *            as equal when their hue values differ less than this tolerance
+	 *            value.
+	 * @param saturationTolerance
+	 *            Color blobs will be regarded as equal when their saturation
+	 *            values differs less than this tolerance value.
+	 * @param valueTolerance
+	 *            An int value in the range 0-255. Color blobs will be regarded
+	 *            as equal when their HSV value differs less than this tolerance
+	 *            value.
 	 * @param cannyThreshold1
 	 *            The first threshold argument of the Canny function. See the
 	 *            OpenCV docs for more info.
@@ -237,10 +256,10 @@ public class ProcessImageActivity extends Activity {
 	 *         e:description of error
 	 */
 	public native String readChessboardImage(String imgfolder, String imgfile,
-			int squareSize, int hueTolerance, int cannyThreshold1,
-			int cannyThreshold2, boolean adaptiveThreshold,
-			boolean normalizeImage, boolean filterQuads, boolean fastCheck,
-			int nsquaresx, int nsquaresy);
+			int squareSize, int hueTolerance, int saturationTolerance,
+			int valueTolerance, int cannyThreshold1, int cannyThreshold2,
+			boolean adaptiveThreshold, boolean normalizeImage,
+			boolean filterQuads, boolean fastCheck, int nsquaresx, int nsquaresy);
 
 	/**
 	 * An AsyncTask to do the Native Call. This is to ensure that the UI doesn't
@@ -259,16 +278,20 @@ public class ProcessImageActivity extends Activity {
 					Integer.parseInt(sharedPrefs.getString("squareSize", "100")),
 					Integer.parseInt(sharedPrefs
 							.getString("hueTolerance", "20")), Integer
-							.parseInt(sharedPrefs.getString("cannyThreshold1",
-									"30")), Integer.parseInt(sharedPrefs
-							.getString("cannyThreshold2", "90")), sharedPrefs
-							.getBoolean("adaptiveThreshold", false),
-					sharedPrefs.getBoolean("normalizeImage", false),
-					sharedPrefs.getBoolean("fastCheck", true), sharedPrefs
+							.parseInt(sharedPrefs.getString(
+									"saturationTolerance", "30")), Integer
+							.parseInt(sharedPrefs.getString("valueTolerance",
+									"400")), Integer.parseInt(sharedPrefs
+							.getString("cannyThreshold1", "30")), Integer
+							.parseInt(sharedPrefs.getString("cannyThreshold2",
+									"90")), sharedPrefs.getBoolean(
+							"adaptiveThreshold", false), sharedPrefs
+							.getBoolean("normalizeImage", false), sharedPrefs
+							.getBoolean("fastCheck", true), sharedPrefs
 							.getBoolean("filterQuads", false), Integer
 							.parseInt(sharedPrefs.getString("nsquaresx", "8")),
 					Integer.parseInt(sharedPrefs.getString("nsquaresy", "8")));
-			
+
 			return nativeResult;
 		}
 
@@ -298,7 +321,7 @@ public class ProcessImageActivity extends Activity {
 					Button saveButton = (Button) findViewById(R.id.saveFunkButton);
 					saveButton.setVisibility(View.VISIBLE);
 				}
-				
+
 				outputString = result;
 
 			}

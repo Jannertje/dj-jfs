@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 /**
  * The about activity shows a small description of the app and how to use it.
+ * TODO: extend the about activity with all the chessboard instructions.
  * 
  * @author Floris
  * 

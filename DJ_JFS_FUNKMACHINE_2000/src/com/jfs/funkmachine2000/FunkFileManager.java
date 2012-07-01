@@ -13,7 +13,7 @@ import android.widget.Toast;
 /**
  * Class for handling file input/ouput
  * 
- * @author Floris
+ * @author Floris, Jan
  * 
  */
 public class FunkFileManager {
@@ -37,19 +37,36 @@ public class FunkFileManager {
 			nomedia.createNewFile();
 	}
 	
-	public static void saveBitmap (Bitmap bmp, String filename, Context context) {
+	/**
+	 * 
+	 * Attempts to write a bitmap image to a jpeg file.
+	 * 
+	 * @param bmp The bitmap object to write
+	 * @param filename The full path for the file to write
+	 * @param context The context used to store the file
+	 * @return A boolean indicating if the write was successful
+	 */
+	public static boolean saveBitmap (Bitmap bmp, String filename, Context context) {
 		try {
 			createFolderNoMedia(context.getFilesDir() + "/warped");
 			FileOutputStream out = new FileOutputStream(context.getFilesDir() + "/warped/"+filename+".jpg");
 			bmp.compress(Bitmap.CompressFormat.JPEG, 90, out);
 			showToast("Saved image in: " + context.getFilesDir()
-					+ "/warped. Image not saved.", context);
+					+ "/warped. ", context);
 		} catch (Exception e) {
 			showToast("Unable to create image in: " + context.getFilesDir()
 					+ "/warped. Image not saved.", context);
+			return false;
 		}
+		return true;
 	}
 	
+	/**
+	 * Read a byte array from file
+	 * @param file The file object to read
+	 * @return The read byte array
+	 * @throws IOException When the file couldn't be read somehow.
+	 */
 	public static byte[] getBytesFromFile(File file) throws IOException {
 		InputStream is = new FileInputStream(file);
 
@@ -87,9 +104,8 @@ public class FunkFileManager {
 	}
 	
 	/**
-	 * Shows a Toast message
+	 * Shows a Toast message (useful for debugging)
 	 * 
-	 * @author Floris
 	 */
 	public static void showToast(CharSequence message, Context context) {
 		Context appcontext = context.getApplicationContext();

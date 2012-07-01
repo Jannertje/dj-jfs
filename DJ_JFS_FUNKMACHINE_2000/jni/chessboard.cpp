@@ -18,10 +18,11 @@ using namespace cv;
 extern "C" {
 JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_readChessboardImage(
 		JNIEnv * enc, jobject obj, jstring jimageFolder, jstring jimageFile,
-		jint jsquareSize, jint jhueTolerance, jint jcannyThreshold1,
-		jint jcannyThreshold2, jboolean adaptiveThreshold,
-		jboolean normalizeImage, jboolean filterQuads, jboolean fastCheck,
-		jint nsquaresx, jint nsquaresy);
+		jint jsquareSize, jint jhueTolerance, jint jsaturationTolerance,
+		jint jvalueTolerance, jint jcannyThreshold1, jint jcannyThreshold2,
+		jboolean adaptiveThreshold, jboolean normalizeImage,
+		jboolean filterQuads, jboolean fastCheck, jint nsquaresx,
+		jint nsquaresy);
 }
 
 int findChessboardConfig(int at, int ni, int fq, int fc) {
@@ -38,7 +39,7 @@ Mat detectChessboardFromImage(Mat &img, int squareSize, int nsquaresx,
 
 	// Create coordinate arrays for the warp perspective and findChessboardCorners output
 	Point2f destinationCorners[4], outerCorners[4];
-	vector<Point2f> corners;
+	vector < Point2f > corners;
 
 	// Detect the chessboard corners
 	bool patternfound = findChessboardCorners(img, patternsize, corners,
@@ -65,17 +66,16 @@ Mat detectChessboardFromImage(Mat &img, int squareSize, int nsquaresx,
 	return pTransform;
 }
 
-
-
 double distanceBetween(Point p1, Point p2) {
 	return sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
 }
 
 string detectColors(Mat &img, unsigned int nsquaresx, unsigned int nsquaresy,
 		string imgfolder, Mat pTransform, unsigned int squareSize,
-		unsigned int hueTolerance, int cannyThreshold1, int cannyThreshold2) {
+		unsigned int hueTolerance, int saturationTolerance, int valueTolerance,
+		int cannyThreshold1, int cannyThreshold2) {
 
-	__android_log_print(ANDROID_LOG_INFO, APPNAME,  "start detectColors...");
+	__android_log_print(ANDROID_LOG_INFO, APPNAME, "start detectColors...");
 	// Create a new image and write the trandsformed source image
 	Size warpedSize = Size(squareSize * nsquaresx, squareSize * nsquaresy);
 	Mat warped = Mat(warpedSize, CV_8U);
@@ -92,8 +92,6 @@ string detectColors(Mat &img, unsigned int nsquaresx, unsigned int nsquaresy,
 	pyrMeanShiftFiltering(normalized, warpedShifted, 10, 13, 1);
 	normalized.release();
 
-
-
 	// Create a HSV copy for easy color reading
 	Mat warpedHSV;
 	cvtColor(warpedf, warpedHSV, CV_BGR2HSV, 0);
@@ -104,8 +102,8 @@ string detectColors(Mat &img, unsigned int nsquaresx, unsigned int nsquaresy,
 	warpedShifted.release();
 
 	// Find the contours from the detected edges
-	vector<vector<Point> > contours;
-	vector<Vec4i> hierarchy;
+	vector < vector<Point> > contours;
+	vector < Vec4i > hierarchy;
 
 	findContours(cannyOutput, contours, hierarchy, CV_RETR_CCOMP,
 			CV_CHAIN_APPROX_SIMPLE);
@@ -118,9 +116,9 @@ string detectColors(Mat &img, unsigned int nsquaresx, unsigned int nsquaresy,
 	bool innerOK;
 	Rect bounding;
 	vector<int> structuredContours[nsquaresx * nsquaresy];
-	vector<Point> hull;
-	vector<Point> foundContourCenters;
-	vector< vector < Point > > hulls;
+	vector < Point > hull;
+	vector < Point > foundContourCenters;
+	vector < vector<Point> > hulls;
 	Point center;
 	bool center_ok;
 
@@ -151,12 +149,13 @@ string detectColors(Mat &img, unsigned int nsquaresx, unsigned int nsquaresy,
 				if (area > 120 && bounding.width > 8 && bounding.height > 8) {
 					hulls.clear();
 					hulls.push_back(contours[i]);
-					drawContours(warped, hulls, 0, Scalar(0,0,255));
+					drawContours(warped, hulls, 0, Scalar(0, 0, 255));
 					// Avoid doubles
 					center = Point(x, y);
 					center_ok = true;
 					for (j = 0; j < foundContourCenters.size(); j++) {
-						if (distanceBetween(center, foundContourCenters[j]) < 10) {
+						if (distanceBetween(center, foundContourCenters[j])
+								< 10) {
 							center_ok = false;
 						}
 					}
@@ -204,31 +203,49 @@ string detectColors(Mat &img, unsigned int nsquaresx, unsigned int nsquaresy,
 			y = bounding.y + bounding.height / 2;
 
 			// Sample the hue at the center 9 pixels
-			sampleColor[0] = warpedHSV.at<Vec3b>((int) y , (int) x )[0];
-			/*sampleColor[0] += warpedHSV.at<Vec3b>((int) y + 1, (int) x)[0];
-			sampleColor[0] += warpedHSV.at<Vec3b>((int) y + 1, (int) x + 1)[0];
-			sampleColor[0] += warpedHSV.at<Vec3b>((int) y - 1, (int) x - 1)[0];
-			sampleColor[0] += warpedHSV.at<Vec3b>((int) y - 1, (int) x)[0];
-			sampleColor[0] += warpedHSV.at<Vec3b>((int) y - 1, (int) x + 1)[0];
-			sampleColor[0] += warpedHSV.at<Vec3b>((int) y, (int) x - 1)[0];
-			sampleColor[0] += warpedHSV.at<Vec3b>((int) y + 1, (int) x)[0];
-			sampleColor[0] += warpedHSV.at<Vec3b>((int) y, (int) x + 1)[0];
-			sampleColor[0] /= 9;*/
+			sampleColor[0] = warpedHSV.at < Vec3b > ((int) y, (int) x)[0];
+			sampleColor[0] += warpedHSV.at < Vec3b > ((int) y + 1, (int) x)[0];
+			sampleColor[0] += warpedHSV.at < Vec3b
+					> ((int) y + 1, (int) x + 1)[0];
+			sampleColor[0] += warpedHSV.at < Vec3b
+					> ((int) y - 1, (int) x - 1)[0];
+			sampleColor[0] += warpedHSV.at < Vec3b > ((int) y - 1, (int) x)[0];
+			sampleColor[0] += warpedHSV.at < Vec3b
+					> ((int) y - 1, (int) x + 1)[0];
+			sampleColor[0] += warpedHSV.at < Vec3b > ((int) y, (int) x - 1)[0];
+			sampleColor[0] += warpedHSV.at < Vec3b > ((int) y + 1, (int) x)[0];
+			sampleColor[0] += warpedHSV.at < Vec3b > ((int) y, (int) x + 1)[0];
+			sampleColor[0] /= 9;
 
-			// Sample the hue at the center 9 pixels
-			sampleColor[1] = warpedHSV.at<Vec3b>((int) y , (int) x)[1];
-			/*sampleColor[1] += warpedHSV.at<Vec3b>((int) y + 1, (int) x)[2];
-			sampleColor[1] += warpedHSV.at<Vec3b>((int) y + 1, (int) x + 1)[2];
-			sampleColor[1] += warpedHSV.at<Vec3b>((int) y - 1, (int) x - 1)[2];
-			sampleColor[1] += warpedHSV.at<Vec3b>((int) y - 1, (int) x)[2];
-			sampleColor[1] += warpedHSV.at<Vec3b>((int) y - 1, (int) x + 1)[2];
-			sampleColor[1] += warpedHSV.at<Vec3b>((int) y, (int) x - 1)[2];
-			sampleColor[1] += warpedHSV.at<Vec3b>((int) y + 1, (int) x)[2];
-			sampleColor[1] += warpedHSV.at<Vec3b>((int) y, (int) x + 1)[2];
-			sampleColor[1] /= 9;*/
+			// Sample the saturation at the center 9 pixels
+			sampleColor[1] = warpedHSV.at < Vec3b > ((int) y, (int) x)[1];
+			sampleColor[1] += warpedHSV.at < Vec3b > ((int) y + 1, (int) x)[1];
+			sampleColor[1] += warpedHSV.at < Vec3b
+					> ((int) y + 1, (int) x + 1)[1];
+			sampleColor[1] += warpedHSV.at < Vec3b
+					> ((int) y - 1, (int) x - 1)[1];
+			sampleColor[1] += warpedHSV.at < Vec3b > ((int) y - 1, (int) x)[1];
+			sampleColor[1] += warpedHSV.at < Vec3b
+					> ((int) y - 1, (int) x + 1)[1];
+			sampleColor[1] += warpedHSV.at < Vec3b > ((int) y, (int) x - 1)[1];
+			sampleColor[1] += warpedHSV.at < Vec3b > ((int) y + 1, (int) x)[1];
+			sampleColor[1] += warpedHSV.at < Vec3b > ((int) y, (int) x + 1)[1];
+			sampleColor[1] /= 9;
 
-
-			sampleColor[2] = warpedHSV.at<Vec3b>((int) y, (int) x )[2];
+			// Sample the value at the center 9 pixels
+			sampleColor[2] = warpedHSV.at < Vec3b > ((int) y, (int) x)[2];
+			sampleColor[2] += warpedHSV.at < Vec3b > ((int) y + 1, (int) x)[2];
+			sampleColor[2] += warpedHSV.at < Vec3b
+					> ((int) y + 1, (int) x + 1)[2];
+			sampleColor[2] += warpedHSV.at < Vec3b
+					> ((int) y - 1, (int) x - 1)[2];
+			sampleColor[2] += warpedHSV.at < Vec3b > ((int) y - 1, (int) x)[2];
+			sampleColor[2] += warpedHSV.at < Vec3b
+					> ((int) y - 1, (int) x + 1)[2];
+			sampleColor[2] += warpedHSV.at < Vec3b > ((int) y, (int) x - 1)[2];
+			sampleColor[2] += warpedHSV.at < Vec3b > ((int) y + 1, (int) x)[2];
+			sampleColor[2] += warpedHSV.at < Vec3b > ((int) y, (int) x + 1)[2];
+			sampleColor[2] /= 9;
 
 			// Check if the sampleColor or similar color is found before
 			found = false;
@@ -236,10 +253,9 @@ string detectColors(Mat &img, unsigned int nsquaresx, unsigned int nsquaresy,
 				hueDiff = abs(sampleColor[0] - colors[j][0]);
 				satDiff = abs(sampleColor[1] - colors[j][1]);
 				valueDiff = abs(sampleColor[2] - colors[j][2]);
-				if (hueDiff < hueTolerance
-						|| hueDiff > 180 - hueTolerance) {
-					if(valueDiff < 500) {
-						if(satDiff< 30) {
+				if (hueDiff < hueTolerance || hueDiff > 180 - hueTolerance) {
+					if (valueDiff < valueTolerance) {
+						if (satDiff < saturationTolerance) {
 							contourColors[i] = j;
 							found = true;
 							break;
@@ -305,10 +321,11 @@ string detectColors(Mat &img, unsigned int nsquaresx, unsigned int nsquaresy,
 
 JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_readChessboardImage(
 		JNIEnv * env, jobject obj, jstring jimageFolder, jstring jimageFile,
-		jint jsquareSize, jint jhueTolerance, jint jcannyThreshold1,
-		jint jcannyThreshold2, jboolean adaptiveThreshold,
-		jboolean normalizeImage, jboolean filterQuads, jboolean fastCheck,
-		jint nsquaresx, jint nsquaresy) {
+		jint jsquareSize, jint jhueTolerance, jint jsaturationTolerance,
+		jint jvalueTolerance, jint jcannyThreshold1, jint jcannyThreshold2,
+		jboolean adaptiveThreshold, jboolean normalizeImage,
+		jboolean filterQuads, jboolean fastCheck, jint nsquaresx,
+		jint nsquaresy) {
 	jboolean isCopy;
 	const char *imageFolder = env->GetStringUTFChars(jimageFolder, &isCopy);
 	const char *imageFile = env->GetStringUTFChars(jimageFile, &isCopy);
@@ -321,7 +338,6 @@ JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_read
 	pathbuilder << imageFile;
 	string imgfile = pathbuilder.str();
 
-
 	// Read an image to matrix
 	Mat img = imread(imgfile, CV_LOAD_IMAGE_COLOR);
 	Mat grayimg = imread(imgfile, CV_LOAD_IMAGE_GRAYSCALE);
@@ -332,8 +348,7 @@ JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_read
 
 	Mat pTransform;
 
-
-	if((bool) normalizeImage) {
+	if ((bool) normalizeImage) {
 		Mat stretched_img;
 		normalize(grayimg, stretched_img, 0, 255, CV_MINMAX);
 		grayimg.release();
@@ -346,8 +361,8 @@ JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_read
 				(bool) normalizeImage, (bool) filterQuads, (bool) fastCheck);
 	} else {
 		pTransform = detectChessboardFromImage(img, (int) jsquareSize,
-						(int) nsquaresx, (int) nsquaresy, (bool) adaptiveThreshold,
-						(bool) normalizeImage, (bool) filterQuads, (bool) fastCheck);
+				(int) nsquaresx, (int) nsquaresy, (bool) adaptiveThreshold,
+				(bool) normalizeImage, (bool) filterQuads, (bool) fastCheck);
 	}
 
 	if (pTransform.data == NULL) {
@@ -355,8 +370,10 @@ JNIEXPORT jstring JNICALL Java_com_jfs_funkmachine2000_ProcessImageActivity_read
 		return env->NewStringUTF(rval.c_str());
 	}
 
-	String outputString = detectColors(img, (unsigned int) nsquaresx, (unsigned int) nsquaresy,
-			imgfolder, pTransform, (unsigned int) jsquareSize, (unsigned int) jhueTolerance,
+	String outputString = detectColors(img, (unsigned int) nsquaresx,
+			(unsigned int) nsquaresy, imgfolder, pTransform,
+			(unsigned int) jsquareSize, (unsigned int) jhueTolerance,
+			(unsigned int) jsaturationTolerance, (unsigned int) jvalueTolerance,
 			(int) jcannyThreshold1, (int) jcannyThreshold2);
 	env->ReleaseStringUTFChars(jimageFolder, imageFolder);
 	env->ReleaseStringUTFChars(jimageFile, imageFile);

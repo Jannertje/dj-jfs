@@ -59,10 +59,24 @@
 		<EditTextPreference
 		    android:key="hueTolerance"
 		    android:title="Hue Tolerance"
-            android:summary="Colors that differ less than this value will be regarded as equal (0-255)"
+            android:summary="The amount of HSV hue that colors can differ while still being interpreted as the same color. (0-255)"
 		    android:numeric="integer"
 		    android:maxLength="3"
 		    android:defaultValue="20" />
+		<EditTextPreference
+		    android:key="saturationTolerance"
+		    android:title="Saturation Tolerance"
+            android:summary="The amount of HSV saturation that colors can differ while still being interpreted as the same color."
+		    android:numeric="integer"
+		    android:maxLength="3"
+		    android:defaultValue="30" />
+		<EditTextPreference
+		    android:key="valueTolerance"
+		    android:title="Value Tolerance"
+            android:summary="The amount of HSV value that colors can differ while still being interpreted as the same color."
+		    android:numeric="integer"
+		    android:maxLength="3"
+		    android:defaultValue="400" />
     </PreferenceCategory>
     
     <PreferenceCategory 

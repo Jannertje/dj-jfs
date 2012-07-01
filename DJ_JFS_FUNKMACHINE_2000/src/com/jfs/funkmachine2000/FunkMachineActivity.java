@@ -18,7 +18,7 @@ import android.widget.Toast;
 /**
  * Main activity. Called when you open the app.
  * 
- * @author Floris, Jan
+ * @author Floris, Jan, Daan, Joran, Sander
  * 
  */
 public class FunkMachineActivity extends Activity {
@@ -48,7 +48,6 @@ public class FunkMachineActivity extends Activity {
 	 * Called when the user presses the "Process image" button.
 	 * 
 	 * @param view
-	 * @author Floris
 	 */
 	public void processImage(View view) {
 		Intent intent = new Intent(this, ProcessImageActivity.class);
@@ -63,7 +62,6 @@ public class FunkMachineActivity extends Activity {
 	 * Called when the user presses the "Choose image from gallery" button
 	 * 
 	 * @param view
-	 * @author Floris
 	 */
 	public void browseImage(View view) {
 		startActivityForResult(new Intent(Intent.ACTION_PICK,
@@ -102,7 +100,6 @@ public class FunkMachineActivity extends Activity {
 	 * @param contentUri
 	 *            The Uri to transform
 	 * @return The File Path of the content Uri
-	 * @author Floris
 	 */
 	public String getRealPathFromURI(Uri contentUri) {
 		String[] proj = { MediaStore.Images.Media.DATA };
@@ -117,7 +114,6 @@ public class FunkMachineActivity extends Activity {
 	 * Called when the user presses the "Capture New Image" button
 	 * 
 	 * @param view
-	 * @author Floris
 	 */
 	public void takePhoto(View view) {
 		try {
@@ -143,7 +139,6 @@ public class FunkMachineActivity extends Activity {
 	 * Called when the user presses the "Settings" button
 	 * 
 	 * @param view
-	 * @author Jan
 	 */
 	public void openSettings(View view) {
 		startActivity(new Intent(this, SettingsActivity.class));
@@ -153,7 +148,6 @@ public class FunkMachineActivity extends Activity {
 	 * Called when the user presses the "FunkList" button
 	 * 
 	 * @param view
-	 * @author Jan
 	 */
 	public void openFunkList(View view) {
 		startActivity(new Intent(this, FunkListActivity.class));
@@ -163,15 +157,13 @@ public class FunkMachineActivity extends Activity {
 	 * Called when the user presses the "About" button
 	 * 
 	 * @param view
-	 * @author Floris
 	 */
 	public void openAbout(View view) {
 		startActivity(new Intent(this, AboutActivity.class));
 	}
 	
 	/**
-	 * Shows a Toast message
-	 * @author Floris
+	 * Shows a Toast message (useful for debugging)
 	 */
 	public void showToast (CharSequence message) {
 		Context context = getApplicationContext();

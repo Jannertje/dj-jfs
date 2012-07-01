@@ -14,7 +14,8 @@ import android.database.sqlite.SQLiteDatabase;
 
 
 /**
- * @author janwesterdiep
+ * 
+ * @author Jan
  * 
  */
 public class MidiDatabaseHelper {
