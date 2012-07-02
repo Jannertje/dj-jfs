@@ -2,12 +2,15 @@ package com.jfs.funkmachine2000;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.widget.Toast;
 
 /**
@@ -54,8 +57,8 @@ public class FunkFileManager {
 			showToast("Saved image in: " + context.getFilesDir()
 					+ "/warped. ", context);
 		} catch (Exception e) {
-			showToast("Unable to create image in: " + context.getFilesDir()
-					+ "/warped. Image not saved.", context);
+			Log.d(FunkMachineActivity.TAG, "Could not save image in: "+ context.getFilesDir()
+					+ "/warped. ", e );
 			return false;
 		}
 		return true;
@@ -113,5 +116,32 @@ public class FunkFileManager {
 
 		Toast toast = Toast.makeText(appcontext, message, duration);
 		toast.show();
+	}
+	
+	/**
+	 * Copy file from one directory to another.
+	 * @param srFile Path to source file
+	 * @param dtFile Path to destination file
+	 */
+	public static final void copyfile(String srFile, String dtFile){
+	    try{
+	        File f1 = new File(srFile);
+	        File f2 = new File(dtFile);
+	        InputStream in = new FileInputStream(f1);
+
+	        OutputStream out = new FileOutputStream(f2);
+
+	        byte[] buf = new byte[1024];
+	        int len;
+	        while ((len = in.read(buf)) > 0){
+	            out.write(buf, 0, len);
+	        }
+	        in.close();
+	        out.close();
+	    } catch(FileNotFoundException ex){
+	    	Log.d(FunkMachineActivity.TAG, "could not copy: File not Found", ex);
+	    } catch(IOException e){
+	    	Log.d(FunkMachineActivity.TAG, "could not copy: IOException", e);
+	    }
 	}
 }

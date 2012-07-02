@@ -6,14 +6,17 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
-import android.widget.ImageView;
+import android.widget.Button;
 
 /**
- * The about activity shows a small description of the app and how to use it.
+ * The PlayMidiActivity plays a previously created midi and shows the
+ * corresponding image, if available.
  * 
- * @author Floris
+ * @author Jan
  * 
  */
 public class PlayMidiActivity extends Activity {
@@ -21,6 +24,8 @@ public class PlayMidiActivity extends Activity {
 	private long midiID;
 	private MidiPlayer player;
 	private Bitmap warpBitmap;
+	private boolean formatted;
+	private String imgpath;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -33,23 +38,53 @@ public class PlayMidiActivity extends Activity {
 		if (midiID == -1L)
 			finish();
 
-		File imgFile = new File(getFilesDir() + "/warped/warpedImage"+midiID+".jpg");
-		if (imgFile.exists()) {
-
-			warpBitmap = BitmapFactory.decodeFile(imgFile
-					.getAbsolutePath());
-
-			ImageView warpedImage = (ImageView) findViewById(R.id.warpedImageView);
-			warpedImage.setVisibility(View.VISIBLE);
-			warpedImage.setImageBitmap(warpBitmap);
-		}
-		
 		MidiDatabaseHelper helper = new MidiDatabaseHelper(this);
 		helper.open();
 		Midi toPlay = helper.selectMidi(midiID);
 		helper.close();
+
 		player = new MidiPlayer(toPlay.getFile(), this);
 		player.playMidi();
+
+		formatted = false;
+
+		File imgFile = new File(getFilesDir() + "/warped/warpedImage" + midiID
+				+ ".jpg");
+		imgpath = imgFile.getAbsolutePath();
+		if (imgFile.exists()) {
+
+			warpBitmap = BitmapFactory.decodeFile(imgpath);
+
+			ChessboardImageView warpedImage = (ChessboardImageView) findViewById(R.id.warpedImageViewPlay);
+			warpedImage.setVisibility(View.VISIBLE);
+			warpedImage.init(warpBitmap, toPlay.getString(), formatted);
+			findViewById(R.id.changeViewButtonPlay).setVisibility(View.VISIBLE);
+		}
+	}
+
+	public void changeView(View view) {
+		Button changeView = (Button) view;
+		ChessboardImageView warpedImage = (ChessboardImageView) findViewById(R.id.warpedImageViewPlay);
+
+		formatted = warpedImage.swap();
+
+		if (formatted) {
+			changeView.setText(R.string.changeviewback);
+		} else {
+			changeView.setText(R.string.changeview);
+		}
+	}
+
+	public void openWarpedImage(View view) {
+		String extpath = Environment.getExternalStorageDirectory()
+				+ "/DJ_JFS_FunkMachine/imageWarped.jpg";
+		if (!formatted) {
+			FunkFileManager.copyfile(imgpath,extpath);
+			Intent intent = new Intent();
+			intent.setAction(android.content.Intent.ACTION_VIEW);
+			intent.setDataAndType(Uri.fromFile(new File(extpath)), "image/jpg");
+			startActivity(intent);
+		}
 	}
 
 	@Override

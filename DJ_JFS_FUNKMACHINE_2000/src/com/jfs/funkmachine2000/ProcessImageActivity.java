@@ -9,12 +9,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -42,6 +42,7 @@ public class ProcessImageActivity extends Activity {
 	private String imageFile;
 
 	private Bitmap warpBitmap;
+	private Bitmap formattedBitmap;
 	private String outputString;
 
 	private boolean completed;
@@ -108,18 +109,15 @@ public class ProcessImageActivity extends Activity {
 	 * @param view
 	 */
 	public void changeView(View view) {
-
-		Button changeView = (Button) findViewById(R.id.changeViewButton);
-
+		Button changeView = (Button) view;
+		ChessboardImageView warpedImage = (ChessboardImageView) findViewById(R.id.warpedImageView);
+		
+		formatted = warpedImage.swap();
+		
 		if (formatted) {
-			formatted = false;
-			ImageView warpedImage = (ImageView) findViewById(R.id.warpedImageView);
-			warpedImage.setImageBitmap(warpBitmap);
-			changeView.setText(R.string.changeview);
-		} else {
-			formatted = true;
-			// TODO: Change to formatted image
 			changeView.setText(R.string.changeviewback);
+		} else {
+			changeView.setText(R.string.changeview);
 		}
 	}
 
@@ -130,11 +128,13 @@ public class ProcessImageActivity extends Activity {
 	 * @param view
 	 */
 	public void openWarpedImage(View view) {
-		File warpedImage = new File(imagePath + "/imageWarped.jpg");
-		Intent intent = new Intent();
-		intent.setAction(android.content.Intent.ACTION_VIEW);
-		intent.setDataAndType(Uri.fromFile(warpedImage), "image/jpg");
-		startActivity(intent);
+		if (!formatted) {
+			File warpedImage = new File(imagePath + "/imageWarped.jpg");
+			Intent intent = new Intent();
+			intent.setAction(android.content.Intent.ACTION_VIEW);
+			intent.setDataAndType(Uri.fromFile(warpedImage), "image/jpg");
+			startActivity(intent);
+		}
 	}
 
 	/**
@@ -172,6 +172,8 @@ public class ProcessImageActivity extends Activity {
 			Intent intent = new Intent(this, PlayMidiActivity.class);
 			intent.putExtra(PlayMidiActivity.MIDI_ID, toPlay.getId());
 			startActivity(intent);
+			
+			finish();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -311,9 +313,9 @@ public class ProcessImageActivity extends Activity {
 					warpBitmap = BitmapFactory.decodeFile(imgFile
 							.getAbsolutePath());
 
-					ImageView warpedImage = (ImageView) findViewById(R.id.warpedImageView);
+					ChessboardImageView warpedImage = (ChessboardImageView) findViewById(R.id.warpedImageView);
 					warpedImage.setVisibility(View.VISIBLE);
-					warpedImage.setImageBitmap(warpBitmap);
+					warpedImage.init(warpBitmap, result, false);
 
 					Button changeView = (Button) findViewById(R.id.changeViewButton);
 					changeView.setVisibility(View.VISIBLE);

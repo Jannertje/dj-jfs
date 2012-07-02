@@ -27,6 +27,8 @@ public class FunkMachineActivity extends Activity {
 
 	private final static int TAKE_PICTURE = 1;
 	private final static int SELECT_IMAGE = 2;
+	
+	public static final String TAG = "FunkMachine";
 
 	private Uri outputFileUri;
 	private TextView processButton;

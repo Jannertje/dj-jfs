@@ -15,7 +15,6 @@ import android.widget.ListView;
 public class FunkListActivity extends ListActivity {
 
 	private MidiDatabaseHelper dbHelper;
-	private MidiPlayer player;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
